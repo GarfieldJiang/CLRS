@@ -1,0 +1,10 @@
+# PyCharm
+# http://www.jetbrains.com/pycharm/webhelp/project.html
+.idea
+.iml
+
+# Python
+*.pyc
+
+# Mac OS
+.DS_Store
