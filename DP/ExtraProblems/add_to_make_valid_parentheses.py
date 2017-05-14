@@ -44,6 +44,9 @@ def add_to_make_valid_parantheses(s):
     if n == 0:
         return 0
 
+    for c in s:
+        assert c in LEFT or c in RIGHT, "Input string contains illegal symbols"
+
     b = [[-1 for _ in xrange(0, n + 1)] for _ in xrange(0, n + 1)]
     for i in xrange(1, n + 1):
         b[i][i - 1] = 0
@@ -104,3 +107,14 @@ class TestAddToMakeValidParentheses(unittest.TestCase):
         self.assertEqual(add_to_make_valid_parantheses('[]()'), 0)
         self.assertEqual(add_to_make_valid_parantheses('[(])'), 2)
         self.assertEqual(add_to_make_valid_parantheses('[()]'), 0)
+
+    def testLongValidStrings(self):
+        s = '([' * 100 + '])' * 100
+        self.assertEqual(add_to_make_valid_parantheses(s), 0)
+
+    def testLongInvalidStrings(self):
+        s = '([' * 100 + ')]' * 100
+        self.assertEqual(add_to_make_valid_parantheses(s), 2)
+
+        s = '([' * 100 + ')]' * 99 + ')'
+        self.assertEqual(add_to_make_valid_parantheses(s), 1)
