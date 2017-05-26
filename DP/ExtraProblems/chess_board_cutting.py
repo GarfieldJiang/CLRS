@@ -11,202 +11,200 @@ by 清华大学出版社, 2004.
 """
 
 import unittest
+import logging
+
+logging.basicConfig(level=logging.WARNING)
 
 
 def cut_chess_board(board, n):
-    # print 'n = %d, board = %s' % (n, board)
-    assert n > 0 and type(n) is int, 'n must be an integer greater than zero.'
-    assert board is not None, 'board must not be None.'
-    m = len(board)
-    for i in xrange(0, m):
-        assert len(board[i]) == m, 'board must be square.'
-
-    if m == 0:
-        return -1
-
-    sums = {}
-    scores = {}
-    __calc_chess_board_cutting(board, sums, scores, 0, 0, m, m, n)
-    final_score = scores[(0, 0, m, m, n)]
-    if final_score < 0:
-        return -1
-    return final_score * 1.0 / n
+    return ChessBoardCutter(board, n).run()
 
 
-def __calc_chess_board_cutting(board, sums, scores, i, j, h, w, n):
-    if (i, j, h, w, n) in scores:
-        return scores[(i, j, h, w, n)]
+class ChessBoardCutter(object):
+    def __init__(self, board, n):
+        logging.debug('n = %d, board = %s' % (n, board))
+        assert n > 0 and type(n) is int, 'n must be an integer greater than zero.'
+        assert board is not None, 'board must not be None.'
+        self._m = len(board)
+        for i in xrange(0, self._m):
+            assert len(board[i]) == self._m, 'board must be square.'
 
-    if n == 1:
-        __ensure_sum(board, sums, i, j, h, w)
-        scores[(i, j, h, w, n)] = 0
-        # print 'calculated score: (%d, %d, %d, %d, %d), result is %.2f' % (i, j, h, w, n, 0)
-        return 0
+        self._board = board
+        self._n = n
+        self._get_score = ChessBoardCutter._memoize(self._get_score, {})
+        self._get_sum = ChessBoardCutter._memoize(self._get_sum, {})
 
-    score = -1
-    for newh in xrange(1, h):
-        new_score = __calc_score_for_one_and_n_minus_one(
-            board, sums, scores, (i, j, newh, w, 1), (i + newh, j, h - newh, w, n - 1), n
-        )
+    @staticmethod
+    def _memoize(f, cache):
+        def wrapped(*args):
+            if args not in cache:
+                cache[args] = f(*args)
+            return cache[args]
+        return wrapped
+
+    def run(self):
+        if not self._board:
+            return -1.0
+        final_score = self._get_score(0, 0, self._m, self._m, self._n)
+        if final_score < 0.0:
+            return -1.0
+        return final_score * 1.0 / self._n
+
+    def _get_score(self, i, j, h, w, n):
+        if n == 1:
+            return 0.0
+
+        score = -1
+        for new_h in xrange(1, h):
+            new_score = self._get_score_for_one_and_n_minus_one(
+                (i, j, new_h, w, 1), (i + new_h, j, h - new_h, w, n - 1), n
+            )
+            score = ChessBoardCutter._update_score(score, new_score)
+
+        for new_h in xrange(1, h):
+            new_score = self._get_score_for_one_and_n_minus_one(
+                (i + new_h, j, h - new_h, w, 1), (i, j, new_h, w, n - 1), n
+            )
+            score = ChessBoardCutter._update_score(score, new_score)
+
+        for new_w in xrange(1, w):
+            new_score = self._get_score_for_one_and_n_minus_one(
+                (i, j, h, new_w, 1), (i, j + new_w, h, w - new_w, n - 1), n
+            )
+            score = ChessBoardCutter._update_score(score, new_score)
+
+        for new_w in xrange(1, w):
+            new_score = self._get_score_for_one_and_n_minus_one(
+                (i, j + new_w, h, w - new_w, 1), (i, j, h, new_w, n - 1), n
+            )
+            score = ChessBoardCutter._update_score(score, new_score)
+
+        logging.debug('calculated score: (%d, %d, %d, %d, %d), result is %.2f' % (i, j, h, w, n, score))
+        return score
+
+    @staticmethod
+    def _update_score(score, new_score):
         if (score < 0 or new_score < score) and new_score >= 0:
             score = new_score
+        return score
 
-    for newh in xrange(1, h):
-        new_score = __calc_score_for_one_and_n_minus_one(
-            board, sums, scores, (i + newh, j, h - newh, w, 1), (i, j, newh, w, n - 1), n
+    def _get_score_for_one_and_n_minus_one(self, one_key, n_minus_one_key, n):
+        score_n_minus_1 = self._get_score(*n_minus_one_key)
+        if score_n_minus_1 < 0.0:
+            return -1.0
+
+        return score_n_minus_1 + (n - 1.0) / n * (
+            pow(self._get_sum(*one_key[0:-1]) - 1.0 / (n - 1) * self._get_sum(*n_minus_one_key[0:-1]), 2)
         )
-        if (score < 0 or new_score < score) and new_score >= 0:
-            score = new_score
 
-    for neww in xrange(1, w):
-        new_score = __calc_score_for_one_and_n_minus_one(
-            board, sums, scores, (i, j, h, neww, 1), (i, j + neww, h, w - neww, n - 1), n
-        )
-        if (score < 0 or new_score < score) and new_score >= 0:
-            score = new_score
+    def _get_sum(self, i, j, h, w):
+        assert h >= 1 and w >= 1, 'h and w should be both no less than 1.'
 
-    for neww in xrange(1, w):
-        new_score = __calc_score_for_one_and_n_minus_one(
-            board, sums, scores, (i, j + neww, h, w - neww, 1), (i, j, h, neww, n - 1), n
-        )
-        if (score < 0 or new_score < score) and new_score >= 0:
-            score = new_score
+        if h == 1 and w == 1:
+            return self._board[i][j]
 
-    # print 'calculated score: (%d, %d, %d, %d, %d), result is %.2f' % (i, j, h, w, n, 0)
-    scores[(i, j, h, w, n)] = score
+        if h == 1:
+            return self._get_sum(i, j, 1, 1) + self._get_sum(i, j + 1, 1, w - 1)
 
-
-def __calc_score_for_one_and_n_minus_one(board, sums, scores, one_key, n_minus_one_key, n):
-    __calc_chess_board_cutting(board, sums, scores, *n_minus_one_key)
-    score_n_minus_1 = scores[n_minus_one_key]
-    if score_n_minus_1 < 0:
-        return -1
-
-    __ensure_sum(board, sums, *one_key[0:-1])
-    __ensure_sum(board, sums, *n_minus_one_key[0:-1])
-    new_score = score_n_minus_1 + (n - 1.0) / n * (
-        pow(sums[one_key[0:-1]] - 1.0 / (n - 1) * sums[n_minus_one_key[0:-1]], 2)
-    )
-    return new_score
-
-
-def __ensure_sum(board, sums, i, j, h, w):
-    if (i, j, h, w) in sums:
-        return
-
-    assert h >= 1 and w >= 1, 'h and w should be both no less than 1.'
-
-    if h == 1 and w == 1:
-        sums[(i, j, h, w)] = board[i][j]
-        # print 'calculated sum: (%d, %d, %d, %d), result is %d' % (i, j, h, w, sums[(i, j, h, w)])
-        return
-
-    if h == 1:
-        __ensure_sum(board, sums, i, j, 1, 1)
-        __ensure_sum(board, sums, i, j + 1, 1, w - 1)
-        sums[(i, j, h, w)] = sums[(i, j, 1, 1)] + sums[(i, j + 1, 1, w - 1)]
-        # print 'calculated sum: (%d, %d, %d, %d), result is %d' % (i, j, h, w, sums[(i, j, h, w)])
-        return
-
-    __ensure_sum(board, sums, i, j, 1, w)
-    __ensure_sum(board, sums, i + 1, j, h - 1, w)
-    sums[(i, j, h, w)] = sums[(i, j, 1, w)] + sums[(i + 1, j, h - 1, w)]
-    # print 'calculated sum: (%d, %d, %d, %d), result is %d' % (i, j, h, w, sums[(i, j, h, w)])
+        return self._get_sum(i, j, 1, w) + self._get_sum(i + 1, j, h - 1, w)
 
 
 class TestChessBoardCutting(unittest.TestCase):
-    def test_empty(self):
-        res = cut_chess_board((), 1)
-        self.assertEqual(res, -1)
-
-    def test_single(self):
-        res = cut_chess_board(((100,),), 1)
-        self.assertAlmostEqual(res, 0.0)
-
-        res = cut_chess_board(((100,),), 2)
-        self.assertEqual(res, -1)
-
-    def test_2x2(self):
-        res = cut_chess_board((
-            (5, 5),
-            (3, 6),
-        ), 1)
-        self.assertAlmostEqual(res, 0.0)
-
-        res = cut_chess_board((
-            (5, 5),
-            (3, 6),
-        ), 2)
-        self.assertAlmostEqual(res, 0.25)
-
-    def test_3x3(self):
-        res = cut_chess_board((
-            (4, 4, 4),
-            (6, 1, 3),
-            (6, 3, 5),
-        ), 3)
-        self.assertAlmostEqual(res, 0.0)
-
-        res = cut_chess_board((
-            (6, 6, 4),
-            (1, 3, 4),
-            (3, 5, 4),
-        ), 3)
-        self.assertAlmostEqual(res, 0.0)
-
-        res = cut_chess_board((
-            (1, 2, 3),
-            (4, 5, 6),
-            (5, 7, 10),
-        ), 2)
-        self.assertAlmostEqual(res, 0.25)
-
-        res = cut_chess_board((
-            (1, 2, 3),
-            (4, 5, 6),
-            (5, 7, 11),
-        ), 2)
-        self.assertAlmostEqual(res, 1)
-
-    def test_8x8(self):
-        board = (
-            (12, 12, 12, 12, 12, 5, 5, 5),
-            (12, 12, 12, 12, 12, 5, 5, 5),
-            (15, 15, 30, 60, 60, 5, 5, 5),
-            (15, 15, 30, 20, 20, 5, 5, 5),
-            (15, 15, 30, 20, 20, 5, 5, 5),
-            (15, 15, 30, 20, 20, 5, 5, 5),
-            (12, 12, 12, 12, 12, 5, 5, 5),
-            (12, 12, 12, 12, 12, 5, 5, 5),
+    def test_chess_board_cutting(self):
+        cases = (
+            ((), 1, -1, "Empty"),
+            (((100,),), 1, 0, "Single, 1 piece"),
+            (((100,),), 2, -1, "Single, 2 pieces"),
+            ((
+                (5, 5),
+                (3, 6),
+            ), 1, 0, "2x2, 1 piece"),
+            ((
+                (5, 5),
+                (3, 6),
+            ), 2, 0.25, "2x2, 2 pieces"),
+            ((
+                (4, 4, 4),
+                (6, 1, 3),
+                (6, 3, 5),
+            ), 3, 0, "3x3, 3 pieces, 0 variance, #0"),
+            ((
+                (6, 6, 4),
+                (1, 3, 4),
+                (3, 5, 4),
+            ), 3, 0, "3x3, 3 pieces, 0 variance, #1"),
+            ((
+                (1, 2, 3),
+                (4, 5, 6),
+                (5, 7, 10),
+            ), 2, 0.25, "3x3, 2 pieces, 0.25 variance"),
+            ((
+                (1, 2, 3),
+                (4, 5, 6),
+                (5, 7, 11),
+            ), 2, 1, "3x3, 2 pieces, 1 variance"),
+            (((100,),), 1, 0, "Single, 1 piece"),
+            (((100,),), 2, -1, "Single, 2 pieces"),
+            ((
+                (5, 5),
+                (3, 6),
+            ), 1, 0, "2x2, 1 piece"),
+            ((
+                (5, 5),
+                (3, 6),
+            ), 2, 0.25, "2x2, 2 pieces"),
+            ((
+                (4, 4, 4),
+                (6, 1, 3),
+                (6, 3, 5),
+            ), 3, 0, "3x3, 3 pieces, 0 variance, #0"),
+            ((
+                (6, 6, 4),
+                (1, 3, 4),
+                (3, 5, 4),
+            ), 3, 0, "3x3, 3 pieces, 0 variance, #1"),
+            ((
+                (1, 2, 3),
+                (4, 5, 6),
+                (5, 7, 10),
+            ), 2, 0.25, "3x3, 2 pieces, 0.25 variance"),
+            ((
+                (1, 2, 3),
+                (4, 5, 6),
+                (5, 7, 11),
+            ), 2, 1, "3x3, 2 pieces, 1 variance"),
+            ((
+                (12, 12, 12, 12, 12, 5, 5, 5),
+                (12, 12, 12, 12, 12, 5, 5, 5),
+                (15, 15, 30, 60, 60, 5, 5, 5),
+                (15, 15, 30, 20, 20, 5, 5, 5),
+                (15, 15, 30, 20, 20, 5, 5, 5),
+                (15, 15, 30, 20, 20, 5, 5, 5),
+                (12, 12, 12, 12, 12, 5, 5, 5),
+                (12, 12, 12, 12, 12, 5, 5, 5),
+            ), 7, 0, "8x8, 7 pieces, 0 variance"),
+            ((
+                (12, 12, 12, 12, 12, 5, 5, 5),
+                (12, 12, 12, 13, 12, 5, 5, 5),
+                (15, 14, 30, 61, 60, 5, 5, 5),
+                (15, 15, 30, 20, 20, 6, 5, 5),
+                (15, 15, 29, 20, 20, 5, 5, 5),
+                (15, 15, 30, 20, 20, 5, 5, 5),
+                (12, 12, 11, 12, 12, 5, 5, 5),
+                (12, 12, 12, 12, 12, 5, 5, 5),
+            ), 7, 6.0 / 7, "8x8, 7 pieces, 6/7 variance"),
+            ((
+                (60, 60, 60, 60, 60, 60, 60, 105),
+                (60, 60, 60, 60, 60, 60, 60, 105),
+                (115, 140, 210, 210, 210, 210, 168, 105),
+                (125, 140, 210, 420, 420, 280, 168, 105),
+                (135, 140, 210, 420, 840, 280, 168, 105),
+                (145, 140, 210, 420, 839, 280, 168, 105),
+                (155, 140, 210, 280, 280, 280, 168, 105),
+                (165, 140, 168, 168, 168, 168, 168, 106),
+            ), 14, 1.0 / 7, "8x8, 14 pieces, 1/7 variance"),
         )
 
-        res = cut_chess_board(board, 7)
-        self.assertAlmostEqual(res, 0)
-
-        board = (
-            (12, 12, 12, 12, 12, 5, 5, 5),
-            (12, 12, 12, 13, 12, 5, 5, 5),
-            (15, 14, 30, 61, 60, 5, 5, 5),
-            (15, 15, 30, 20, 20, 6, 5, 5),
-            (15, 15, 29, 20, 20, 5, 5, 5),
-            (15, 15, 30, 20, 20, 5, 5, 5),
-            (12, 12, 11, 12, 12, 5, 5, 5),
-            (12, 12, 12, 12, 12, 5, 5, 5),
-        )
-
-        res = cut_chess_board(board, 7)
-        self.assertAlmostEqual(res, 6.0 / 7)
-
-        board = (
-            (60, 60, 60, 60, 60, 60, 60, 105),
-            (60, 60, 60, 60, 60, 60, 60, 105),
-            (115, 140, 210, 210, 210, 210, 168, 105),
-            (125, 140, 210, 420, 420, 280, 168, 105),
-            (135, 140, 210, 420, 840, 280, 168, 105),
-            (145, 140, 210, 420, 839, 280, 168, 105),
-            (155, 140, 210, 280, 280, 280, 168, 105),
-            (165, 140, 168, 168, 168, 168, 168, 106),
-        )
-
-        res = cut_chess_board(board, 14)
-        self.assertAlmostEqual(res, 1.0 / 7)
+        for board, n, expected, desc in cases:
+            res = cut_chess_board(board, n)
+            self.assertAlmostEqual(res, expected, msg="Case: %s. Error: %s != %s" % (desc, res, expected))
