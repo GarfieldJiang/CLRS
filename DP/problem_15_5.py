@@ -180,6 +180,13 @@ def _update_cost(cost, new_cost, cached_op, new_op_type, c, i, j):
 
 
 def get_edit_distance(x, y, op_costs):
+    """
+    Core algorithm of part a. If KILL is available, then the run time is O(m^2 n). Otherwise, the run time is O(mn).
+    :param x: The source sequence.
+    :param y: The destination sequence.
+    :param op_costs: The dictionary that stores the cost of available operations.
+    :return: The lowest cost of transforming x to y and the operation sequence.
+    """
     m = len(x)
     n = len(y)
     c = [[-1 for _ in xrange(0, n + 1)] for _ in xrange(0, m + 1)]
@@ -194,32 +201,32 @@ def get_edit_distance(x, y, op_costs):
             cost = -1
             cached_op = CachedOperation()
             char = y[j - 1] if j >= 1 else ''
-            if i >= 1 and j >= 1 and x[i - 1] == y[j - 1]:
+            if Operations.COPY in op_costs and i >= 1 and j >= 1 and x[i - 1] == y[j - 1]:
                 assert c[i - 1][j - 1] >= 0
                 new_cost = c[i - 1][j - 1] + op_costs[Operations.COPY]
                 cost = _update_cost(cost, new_cost, cached_op, Operations.COPY, char, i - 1, j - 1)
 
-            if i >= 1 and j >= 1:
+            if Operations.REPLACE in op_costs and i >= 1 and j >= 1:
                 assert c[i - 1][j - 1] >= 0
                 new_cost = c[i - 1][j - 1] + op_costs[Operations.REPLACE]
                 cost = _update_cost(cost, new_cost, cached_op, Operations.REPLACE, char, i - 1, j - 1)
 
-            if i >= 1:
+            if Operations.DELETE in op_costs and i >= 1:
                 assert c[i - 1][j] >= 0
                 new_cost = c[i - 1][j] + op_costs[Operations.DELETE]
                 cost = _update_cost(cost, new_cost, cached_op, Operations.DELETE, char, i - 1, j)
 
-            if j >= 1:
+            if Operations.INSERT in op_costs and j >= 1:
                 assert c[i][j - 1] >= 0
                 new_cost = c[i][j - 1] + op_costs[Operations.INSERT]
                 cost = _update_cost(cost, new_cost, cached_op, Operations.INSERT, char, i, j - 1)
 
-            if i >= 2 and j >= 2 and x[i - 1] == y[j - 2] and x[i - 2] == y[j - 1]:
+            if Operations.TWIDDLE in op_costs and i >= 2 and j >= 2 and x[i - 1] == y[j - 2] and x[i - 2] == y[j - 1]:
                 assert c[i - 2][j - 2] >= 0
                 new_cost = c[i - 2][j - 2] + op_costs[Operations.TWIDDLE]
                 cost = _update_cost(cost, new_cost, cached_op, Operations.TWIDDLE, char, i - 2, j - 2)
 
-            if j == n: # Kill must be the last operation, so j must be already n.
+            if Operations.KILL in op_costs and j == n:  # Kill must be the last operation, so j must be already n.
                 for i_1 in xrange(0, i):
                     assert c[i_1][j] >= 0
                     new_cost = c[i_1][j] + op_costs[Operations.KILL]
@@ -233,12 +240,21 @@ def get_edit_distance(x, y, op_costs):
     i = m
     j = n
     while cached_ops[i][j] is not None:
+        assert isinstance(cached_ops[i][j], CachedOperation)
         ops.insert(0, cached_ops[i][j].op)
         i, j = cached_ops[i][j].i, cached_ops[i][j].j
     return c[m][n], tuple(ops)
 
 
 def run_ops(list_x, list_z, ops, on_op=None):
+    """
+    Really runs the operations in given x and z in list form.
+    :param list_x: source sequence in list form.
+    :param list_z: target sequence in list form.
+    :param ops: operation sequence.
+    :param on_op: callback after each operation is run.
+    :return: Nothing, but if the operation sequence is correct, list_z should be equal to list_x.
+    """
     i = 0
     j = 0
     m = len(list_x)
@@ -249,6 +265,67 @@ def run_ops(list_x, list_z, ops, on_op=None):
         j = op.j_increment(j, n)
         if on_op:
             on_op(list_x, list_z, i, j, op)
+
+
+_OP_COSTS_FOR_DNA_ALIGNMENT = {
+    Operations.REPLACE: 1,
+    Operations.COPY: -1,
+    Operations.INSERT: 2,
+    Operations.DELETE: 2,
+}
+
+
+def get_dna_sequence_similarity(x, y):
+    """
+    Core algorithm of part b taking use of part a. Only four operation types are available, and their costs are defined
+    as above in _OP_COSTS_FOR_DNA_ALIGNMENT.
+    :param x: The source sequence.
+    :param y: The destination sequence.
+    :return: The similarity of the given sequences which is the opposite number of the edit distance, plus the operation
+    sequence.
+    """
+    cost, ops = get_edit_distance(x, y, _OP_COSTS_FOR_DNA_ALIGNMENT)
+    return -cost, ops
+
+
+def print_dna_alignment(x, y, ops):
+    """
+    Print the result of DNA alignment.
+    :param x: The source sequence.
+    :param y: The destination sequence.
+    :param ops: operation sequence.
+    :return: Nothing.
+    """
+    x_row = []
+    y_row = []
+    score_row = []
+
+    def append(x_char, y_char, score_char):
+        x_row.append(x_char)
+        y_row.append(y_char)
+        score_row.append(score_char)
+
+    i = 0
+    j = 0
+    m = len(x)
+    n = len(y)
+    for op in ops:
+        if op.type_name() == Operations.REPLACE:
+            append(x[i], op.c, '-')
+        elif op.type_name() == Operations.COPY:
+            append(x[i], x[i], '+')
+        elif op.type_name() == Operations.INSERT:
+            append(' ', op.c, '*')
+        else:
+            assert op.type_name() == Operations.DELETE
+            append(x[i], ' ', '*')
+
+        i = op.i_increment(i, m)
+        j = op.j_increment(j, n)
+
+    print ''.join(x_row)
+    print ''.join(y_row)
+    print ''.join(score_row)
 
 
 class TestEditDistance(unittest.TestCase):
@@ -315,7 +392,7 @@ class TestEditDistance(unittest.TestCase):
                 Operations.INSERT: 10,
                 Operations.TWIDDLE: 10,
                 Operations.KILL: 10,
-            },  3, (Copy(), Copy(), Copy())),
+            }, 3, (Copy(), Copy(), Copy())),
 
             ('abc', 'abc', 'Cheap replace', {
                 Operations.COPY: 10,
@@ -324,7 +401,7 @@ class TestEditDistance(unittest.TestCase):
                 Operations.INSERT: 10,
                 Operations.TWIDDLE: 10,
                 Operations.KILL: 10,
-            },  3, (Replace('a'), Replace('b'), Replace('c'))),
+            }, 3, (Replace('a'), Replace('b'), Replace('c'))),
 
             ('abc', 'abc', 'Cheap insert and kill', {
                 Operations.COPY: 10,
@@ -333,7 +410,7 @@ class TestEditDistance(unittest.TestCase):
                 Operations.INSERT: 1,
                 Operations.TWIDDLE: 10,
                 Operations.KILL: 1,
-            },  4, (Insert('a'), Insert('b'), Insert('c'), Kill())),
+            }, 4, (Insert('a'), Insert('b'), Insert('c'), Kill())),
 
             ('abc', 'abc', 'Cheap copy', {
                 Operations.COPY: 1,
@@ -342,7 +419,7 @@ class TestEditDistance(unittest.TestCase):
                 Operations.INSERT: 10,
                 Operations.TWIDDLE: 10,
                 Operations.KILL: 10,
-            },  3, (Copy(), Copy(), Copy())),
+            }, 3, (Copy(), Copy(), Copy())),
 
             ('abc', 'abc', 'Cheap replace and twiddle', {
                 Operations.COPY: 10,
@@ -351,7 +428,7 @@ class TestEditDistance(unittest.TestCase):
                 Operations.INSERT: 10,
                 Operations.TWIDDLE: 1,
                 Operations.KILL: 10,
-            },  3, (Replace('a'), Replace('b'), Replace('c'))),
+            }, 3, (Replace('a'), Replace('b'), Replace('c'))),
 
             ('abc', 'acb', 'Cheap replace and twiddle', {
                 Operations.COPY: 10,
@@ -369,21 +446,22 @@ class TestEditDistance(unittest.TestCase):
                 Operations.INSERT: 1,
                 Operations.TWIDDLE: 10,
                 Operations.KILL: 1,
-            },  4, (Insert('a'), Insert('b'), Insert('c'), Kill())),
+            }, 4, (Insert('a'), Insert('b'), Insert('c'), Kill())),
         )
 
         for x, y, desc, op_costs, expected_cost, expected_ops in cases:
             cost, ops = get_edit_distance(x, y, op_costs)
-            self.assertAlmostEqual(cost, expected_cost, msg="From '%s' to '%s', %s, cost is %.2f, expected is %.2f"
-                                   % (x, y, desc, cost, expected_cost))
+            self.assertAlmostEqual(cost, expected_cost,
+                                   msg="From '%s' to '%s', %s, cost is %.2f, expected is %.2f"
+                                       % (x, y, desc, cost, expected_cost))
             self.assertEqual(len(ops), len(expected_ops),
                              msg="From '%s' to '%s', %s, ops len is %d, expected ops len is %d"
-                             % (x, y, desc, len(ops), len(expected_ops)))
+                                 % (x, y, desc, len(ops), len(expected_ops)))
             op_len = len(ops)
             for i in xrange(0, op_len):
                 self.assertEqual(ops[i], expected_ops[i],
                                  msg="From '%s' to '%s', %s, operation %d, op is [%s], expected op is [%s]"
-                                 % (x, y, desc, i, ops[i], expected_ops[i]))
+                                     % (x, y, desc, i, ops[i], expected_ops[i]))
 
             list_x = list(x)
             list_z = [''] * len(y)
@@ -395,7 +473,7 @@ def _on_op(list_x, list_z, i, j, op):
     op_str = '%-20s' % op
     x = ''.join(list_x)
     if i < len(x):
-        x = '%s\033[4m%s\033[0m%s ' % (x[0:i], x[i:i+1], x[i+1:len(x)])
+        x = '%s\033[4m%s\033[0m%s ' % (x[0:i], x[i:i + 1], x[i + 1:len(x)])
     else:
         x = '%s\033[4m \033[0m' % x
     x = '%-30s' % x
@@ -405,7 +483,8 @@ def _on_op(list_x, list_z, i, j, op):
     print ''.join([op_str, x, z])
 
 
-def _main():
+def _demo_part_a():
+    print '==================== PART A ===================='
     x = 'algorithm'
     y = 'altruistic'
     op_costs = {
@@ -420,5 +499,16 @@ def _main():
     print 'Transforming x=\'%s\' to y=\'%s\', cost=%.2f' % (x, y, cost)
     run_ops(list(x), [None] * len(y), ops, _on_op)
 
+
+def _demo_part_b():
+    print '==================== PART B ===================='
+    x = 'GATCGGCAT'
+    y = 'CAATGTGAATC'
+    similarity, ops = get_dna_sequence_similarity(x, y)
+    print 'Aligning: \'%s\' and \'%s\' Similarity: %.2f' % (x, y, similarity)
+    print_dna_alignment(x, y, ops)
+
+
 if __name__ == '__main__':
-    _main()
+    _demo_part_a()
+    _demo_part_b()
