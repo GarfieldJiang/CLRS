@@ -3,6 +3,15 @@ from collections import namedtuple
 
 
 def plan_inventory(demands, fixed_productivity, extra_cost_per_machine, holding_cost_func):
+    """
+    DP algorithm with O(n * D * D) time and O(n * D) space, where n == len(demands) is the month count, and D is the
+    sum of all elements in demands.
+    :param demands: machine counts demanded at corresponding months. 
+    :param fixed_productivity: the fixed productivity (with no cost) per month.
+    :param extra_cost_per_machine: cost for each machine that exceeds fixed_productivity per month.
+    :param holding_cost_func: holding cost for remaining machines.
+    :return: The optimal cost and the corresponding producing plan.
+    """
     if not demands:
         return 0, ()
 
