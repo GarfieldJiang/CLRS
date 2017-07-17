@@ -42,26 +42,57 @@ def do_01_knapsack(items, weight_limit):
     return dp[n][weight_limit]
 
 
+def plan_water_stops(positions, duration):
+    """
+    Ex 16.2-4. Greedy algorithm with O(n) run time, where n is len(positions)
+    :param positions: positions of the water stops plus the beginning and ending points of the trip.
+    :param duration: how much distance the professor can cover without refilling his water supply.
+    :return: The optimal choice of water stop indices, including the beginning point.
+    """
+
+    if not positions:
+        return 0, ()
+
+    n = len(positions)
+    for i in xrange(1, n):
+        assert positions[i - 1] < positions[i]
+    assert duration > 0
+
+    stops = [0]
+    for i in xrange(1, n):
+        last_stop_pos = positions[stops[-1]]
+        if positions[i] - last_stop_pos > duration:  # No way to finish the trip.
+            return -1, ()
+
+        if i == n - 1:
+            break
+
+        if positions[i + 1] - last_stop_pos > duration:
+            stops.append(i)
+
+    return len(stops), tuple(stops)
+
+
 class TestGreedyElements(unittest.TestCase):
     def test_01_knapsack(self):
-        Case = namedtuple('Case', 'desc items weight_limit expected_opt_value')
+        case_class = namedtuple('Case', 'desc items weight_limit expected_opt_value')
         cases = (
-            Case(desc='Empty', items=(), weight_limit=100, expected_opt_value=0),
-            Case(desc='Single item within limit', items=(KnapsackItem(weight=10, value=5),), weight_limit=10,
-                 expected_opt_value=5),
-            Case(desc='Single item beyond limit', items=(KnapsackItem(weight=10, value=5),), weight_limit=9,
-                 expected_opt_value=0),
-            Case(desc='Triple items #0', items=(
+            case_class(desc='Empty', items=(), weight_limit=100, expected_opt_value=0),
+            case_class(desc='Single item within limit', items=(KnapsackItem(weight=10, value=5),), weight_limit=10,
+                       expected_opt_value=5),
+            case_class(desc='Single item beyond limit', items=(KnapsackItem(weight=10, value=5),), weight_limit=9,
+                       expected_opt_value=0),
+            case_class(desc='Triple items #0', items=(
                 KnapsackItem(weight=10, value=60),
                 KnapsackItem(weight=20, value=100),
                 KnapsackItem(weight=30, value=120),
             ), weight_limit=50, expected_opt_value=220),
-            Case(desc='Triple items #1', items=(
+            case_class(desc='Triple items #1', items=(
                 KnapsackItem(weight=20, value=100),
                 KnapsackItem(weight=10, value=60),
                 KnapsackItem(weight=30, value=120),
             ), weight_limit=50, expected_opt_value=220),
-            Case(desc='Triple items #2', items=(
+            case_class(desc='Triple items #2', items=(
                 KnapsackItem(weight=30, value=120),
                 KnapsackItem(weight=20, value=100),
                 KnapsackItem(weight=10, value=60),
@@ -72,3 +103,25 @@ class TestGreedyElements(unittest.TestCase):
             opt_value = do_01_knapsack(case.items, case.weight_limit)
             self.assertEqual(opt_value, case.expected_opt_value,
                              msg='%s, %d != %d' % (case.desc, opt_value, case.expected_opt_value))
+
+    def test_plan_water_stops(self):
+        case_class = namedtuple('Case', 'desc positions duration expected_stop_count expected_stops')
+        cases = (
+            case_class(desc="Empty", positions=(), duration=2000, expected_stop_count=0, expected_stops=()),
+            case_class(desc="One point", positions=(0,), duration=2000, expected_stop_count=1, expected_stops=(0,)),
+            case_class(desc="Two points reachable", positions=(0, 1500),
+                       duration=2000, expected_stop_count=1, expected_stops=(0,)),
+            case_class(desc="Two points unreachable", positions=(0, 2500),
+                       duration=2000, expected_stop_count=-1, expected_stops=()),
+            case_class(desc="10 points reachable", positions=(0, 1000, 1500, 2500, 2800, 3200, 3600, 4000, 5000, 6000),
+                       duration=2000, expected_stop_count=4, expected_stops=(0, 2, 5, 8)),
+            case_class(desc="10 points unreachable",
+                       positions=(0, 1000, 1500, 2500, 2800, 4810, 5600, 6500, 7000, 9000),
+                       duration=2000, expected_stop_count=-1, expected_stops=()),
+        )
+
+        for case in cases:
+            stop_count, stops = plan_water_stops(case.positions, case.duration)
+            res = (stop_count, stops)
+            expected = (case.expected_stop_count, case.expected_stops)
+            self.assertEqual(res, expected, msg='%s, %s != %s' % (case.desc, res, expected))
