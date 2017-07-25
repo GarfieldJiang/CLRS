@@ -73,6 +73,38 @@ def plan_water_stops(positions, duration):
     return len(stops), tuple(stops)
 
 
+def do_fractional_knapsack_sort_and_greedy(items, weight_limit):
+    """
+    Straightforward greedy algorithm to solve the fractional knapsack problem of O(n log n) running time, suppose n =
+    len(items) and the sorting algorithm used is of O(n log n) running time.
+    :param items: list of items to select from.
+    :param weight_limit: the weight limit of the knapsack.
+    :return: The optimal total value the thief can carry, and the selected weights of each item.
+    """
+    if not items:
+        return 0, ()
+
+    items = list(items)
+    items = sorted(items, key=lambda x: x.value * 1.0 / x.weight, reverse=True)
+    value = 0
+    n = len(items)
+    selected_weights = [0] * len(items)
+    i = 0
+    while weight_limit > 0 and i < n:
+        item = items[i]
+        if item.weight < weight_limit:
+            selected_weights[i] = item.weight
+            value += item.value
+            weight_limit -= item.weight
+        else:
+            selected_weights[i] = weight_limit
+            value += item.value * 1.0 * selected_weights[i] / item.weight
+            weight_limit = 0
+        i += 1
+
+    return value, tuple(selected_weights)
+
+
 class TestGreedyElements(unittest.TestCase):
     def test_01_knapsack(self):
         case_class = namedtuple('Case', 'desc items weight_limit expected_opt_value')
@@ -125,3 +157,36 @@ class TestGreedyElements(unittest.TestCase):
             res = (stop_count, stops)
             expected = (case.expected_stop_count, case.expected_stops)
             self.assertEqual(res, expected, msg='%s, %s != %s' % (case.desc, res, expected))
+
+    def test_fractional_knapsack(self):
+        case_class = namedtuple('Case', 'desc items weight_limit expected_opt_value expected_selected_weights')
+        cases = (
+            case_class(desc='Empty', items=(), weight_limit=100, expected_opt_value=0, expected_selected_weights=()),
+            case_class(desc='Single item within limit', items=(KnapsackItem(weight=10, value=5),), weight_limit=10,
+                       expected_opt_value=5, expected_selected_weights=(10,)),
+            case_class(desc='Single item beyond limit', items=(KnapsackItem(weight=10, value=5),), weight_limit=9,
+                       expected_opt_value=4.5, expected_selected_weights=(9,)),
+            case_class(desc='Triple items #0', items=(
+                KnapsackItem(weight=30, value=120),
+                KnapsackItem(weight=20, value=100),
+                KnapsackItem(weight=10, value=60),
+            ), weight_limit=50, expected_opt_value=240, expected_selected_weights=(10, 20, 20)),
+            case_class(desc='Triple items #1', items=(
+                KnapsackItem(weight=30, value=120),
+                KnapsackItem(weight=20, value=100),
+                KnapsackItem(weight=10, value=60),
+            ), weight_limit=20, expected_opt_value=110, expected_selected_weights=(10, 10, 0)),
+        )
+
+        methods = (do_fractional_knapsack_sort_and_greedy,)
+
+        for case in cases:
+            for method in methods:
+                opt_value, selected_weights = method(case.items, case.weight_limit)
+                self.assertAlmostEqual(opt_value, case.expected_opt_value,
+                                       msg='%s, opt_value: %.2f != %.2f' %
+                                           (case.desc, opt_value, case.expected_opt_value))
+                for i in xrange(0, len(selected_weights)):
+                    self.assertAlmostEqual(selected_weights[i], case.expected_selected_weights[i],
+                                           msg='%s, selected_weights[%d]: %.2f != %.2f' %
+                                               (case.desc, i, selected_weights[i], case.expected_selected_weights[i]))
