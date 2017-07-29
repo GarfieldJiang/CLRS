@@ -1,6 +1,15 @@
 import unittest
 
 
+def default_key(x):
+    """
+    Default key getter.
+    :param x: input.
+    :return: the input itself.
+    """
+    return x
+
+
 def binary_search_eq(x, beg, end, val):
     """
     Returns the index of the input sequence where the value is equal to the given value.
