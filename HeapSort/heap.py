@@ -78,7 +78,7 @@ def heap_insert(array, new_elem, key=None):
     key = key or default_key
     current = heap_size - 1
     parent = heap_parent(current)
-    while parent >= 0 and key(array[parent]) < key(array[current]):
+    while parent >= 0 and key(array[parent]) < key(new_elem):
         array[current] = array[parent]
         current = parent
         parent = heap_parent(current)
@@ -91,7 +91,7 @@ def heap_delete(array, i, key=None):
     :param array: The input array.
     :param i: the index of the element to delete.
     :param key: function to get the sorting key.
-    :returns: The deleted element.
+    :return: The deleted element.
     """
     deleted = array[i]
     array[i] = array[-1]
