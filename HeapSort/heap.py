@@ -7,20 +7,16 @@ from Common.common import default_key
 logging.basicConfig(level=logging.DEBUG)
 
 
-def _heap_left_child(i):
+def heap_left_child(i):
     return 2 * i + 1
 
 
-def _heap_right_child(i):
+def heap_right_child(i):
     return 2 * i + 2
 
 
-def _heap_parent(i):
+def heap_parent(i):
     return (i - 1) / 2
-
-
-def _default_key(x):
-    return x
 
 
 def max_heapify(array, root_index, heap_size=None, key=None):
@@ -36,7 +32,7 @@ def max_heapify(array, root_index, heap_size=None, key=None):
     key = key or _default_key
     n = heap_size
     while True:
-        left = _heap_left_child(root_index)
+        left = heap_left_child(root_index)
         if left >= n:
             break
 
@@ -85,7 +81,7 @@ def check_max_heap(array, root_index, heap_size=None, key=None):
     if root_index >= n:
         return True
 
-    left = _heap_left_child(root_index)
+    left = heap_left_child(root_index)
     if left >= n:
         return True
 
@@ -132,9 +128,9 @@ class TestHeap(unittest.TestCase):
             case_class(desc='CLRS Example', array=[16, 4, 10, 14, 7, 9, 3, 2, 8, 1], root_index=1),
         )
         for case in cases:
-            self.assertTrue(check_max_heap(case.array, _heap_left_child(case.root_index)),
+            self.assertTrue(check_max_heap(case.array, heap_left_child(case.root_index)),
                             msg='Invalid input')
-            self.assertTrue(check_max_heap(case.array, _heap_right_child(case.root_index)),
+            self.assertTrue(check_max_heap(case.array, heap_right_child(case.root_index)),
                             msg='Invalid input')
             max_heapify(case.array, case.root_index)
             self.assertTrue(check_max_heap(case.array, case.root_index, len(case.array)),
