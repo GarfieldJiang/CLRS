@@ -53,7 +53,7 @@ class MaxPriorityQueue(object):
 
     def insert(self, new_elem):
         """
-        Inserts a new element into the prioirty queue in O(log n) time.
+        Inserts a new element into the prioirty queue in O(log n) time, Optimized by Ex 6.5-6
         :param new_elem: The new element to insert.
         """
         key = self._key
@@ -64,9 +64,10 @@ class MaxPriorityQueue(object):
         current = heap_size - 1
         parent = heap_parent(current)
         while parent >= 0 and key(array[parent]) < key(array[current]):
-            array[parent], array[current] = array[current], array[parent]
+            array[current] = array[parent]
             current = parent
             parent = heap_parent(current)
+        array[current] = new_elem
 
     def __len__(self):
         """
