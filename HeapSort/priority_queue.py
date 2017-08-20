@@ -1,4 +1,4 @@
-from heap import max_heapify, heap_parent, heap_insert
+from heap import max_heapify, heap_insert
 from Common.common import default_key
 from Common.sort_utilities import check_is_sorted
 from unittest import TestCase
