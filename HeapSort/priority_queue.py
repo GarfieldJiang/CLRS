@@ -1,4 +1,4 @@
-from heap import max_heapify, heap_parent
+from heap import max_heapify, heap_parent, heap_insert
 from Common.common import default_key
 from Common.sort_utilities import check_is_sorted
 from unittest import TestCase
@@ -56,18 +56,7 @@ class MaxPriorityQueue(object):
         Inserts a new element into the prioirty queue in O(log n) time, Optimized by Ex 6.5-6
         :param new_elem: The new element to insert.
         """
-        key = self._key
-        array = self._array
-        array.append(new_elem)
-        heap_size = len(array)
-
-        current = heap_size - 1
-        parent = heap_parent(current)
-        while parent >= 0 and key(array[parent]) < key(array[current]):
-            array[current] = array[parent]
-            current = parent
-            parent = heap_parent(current)
-        array[current] = new_elem
+        heap_insert(self._array, new_elem, self._key)
 
     def __len__(self):
         """

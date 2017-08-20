@@ -29,7 +29,7 @@ def max_heapify(array, root_index, heap_size=None, key=None):
     """
     heap_size = heap_size if heap_size is not None else len(array)
     assert heap_size <= len(array), 'Heap size cannot exceed array length'
-    key = key or _default_key
+    key = key or default_key
     n = heap_size
     while True:
         left = heap_left_child(root_index)
@@ -66,6 +66,40 @@ def build_max_heap(array, heap_size=None, key=None):
         max_heapify(array, i, heap_size, key)
 
 
+def heap_insert(array, new_elem, key=None):
+    """
+    Inserts a new element into the max heap in O(log n) time, Optimized by Ex 6.5-6
+    :param array: The input array.
+    :param new_elem: The new element to insert.
+    :param key: function to get the sorting key.
+    """
+    array.append(new_elem)
+    heap_size = len(array)
+    key = key or default_key
+    current = heap_size - 1
+    parent = heap_parent(current)
+    while parent >= 0 and key(array[parent]) < key(array[current]):
+        array[current] = array[parent]
+        current = parent
+        parent = heap_parent(current)
+    array[current] = new_elem
+
+
+def heap_delete(array, i, key=None):
+    """
+    Ex 6.5-8 Delete elements at index i in a max heap in O(log n) time.
+    :param array: The input array.
+    :param i: the index of the element to delete.
+    :param key: function to get the sorting key.
+    :returns: The deleted element.
+    """
+    deleted = array[i]
+    array[i] = array[-1]
+    del array[-1]
+    max_heapify(array, i, key=key)
+    return deleted
+
+
 def check_max_heap(array, root_index, heap_size=None, key=None):
     """
     Utility method to check whether an array rooted at the given index is a max heap. O(n) time, where n = len(array).
@@ -75,7 +109,7 @@ def check_max_heap(array, root_index, heap_size=None, key=None):
     :param key: function to get the sorting key.
     """
 
-    key = key or _default_key
+    key = key or default_key
     heap_size = heap_size or len(array)
     n = heap_size
     if root_index >= n:
@@ -150,3 +184,25 @@ class TestHeap(unittest.TestCase):
             build_max_heap(case.array, key=case.key)
             self.assertTrue(check_max_heap(case.array, 0, key=case.key),
                             msg='Heap is not max: %s' % case.desc)
+
+    def test_heap_delete(self):
+        case_class = namedtuple('Case', 'desc array key')
+        need_key_item_class = namedtuple('NeedKeyItem', 'key value')
+        cases = (
+            case_class(desc='Single', array=[1], key=None),
+            case_class(desc='Big sorted', array=[i for i in xrange(0, 100)], key=None),
+            case_class(desc='Big inversely sorted', array=[99 - i for i in xrange(0, 100)], key=None),
+            case_class(desc='Need another key',
+                       array=[need_key_item_class(key=99-i, value=i) for i in xrange(0, 100)], key=lambda x: x.key)
+        )
+        for case in cases:
+            len_array = len(case.array)
+            for i in xrange(0, len_array):
+                array_copy = list(case.array)
+                build_max_heap(array_copy, key=case.key)
+                expected_deleted = array_copy[i]
+                deleted = heap_delete(array_copy, i, key=case.key)
+                self.assertEqual(deleted, expected_deleted,
+                                 msg='Wrong deletion: %s != %s' % (deleted, expected_deleted))
+                self.assertTrue(check_max_heap(array_copy, 0, key=case.key),
+                                msg='Heap is not max: %s' % case.desc)
