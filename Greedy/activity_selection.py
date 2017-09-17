@@ -1,9 +1,10 @@
 import logging
 import unittest
 from collections import namedtuple
+from HeapSort.heap_sort import heap_sort as sort
 
 
-logging.basicConfig(level=logging.WARN)
+logging.basicConfig(level=logging.WARNING)
 
 
 class Activity(object):
@@ -144,16 +145,97 @@ def select_activity_greedy(activities):
     return len(res), tuple(res)
 
 
-Case = namedtuple('Case', 'desc activities expected_optimal_count expected_optimal_subsets')
+class _HallUseTimeItem(object):
+    def __init__(self, value, start_or_finish, index):
+        self.value = value
+        self.start_or_finish = start_or_finish
+        self.index = index
+
+    def __eq__(self, other):
+        if not isinstance(other, _HallUseTimeItem):
+            raise ValueError('Wrong type')
+
+        return self.value == other.value and self.start_or_finish == other.start_or_finish
+
+    def __lt__(self, other):
+        if not isinstance(other, _HallUseTimeItem):
+            raise ValueError('Wrong type')
+
+        return self.value < other.value or (self.value == other.value and not self.start_or_finish and
+                                            other.start_or_finish)
+
+    def __gt__(self, other):
+        return other < self
+
+    def __le__(self, other):
+        return self < other or self == other
+
+    def __ge__(self, other):
+        return self > other or self == other
+
+    def __cmp__(self, other):
+        if self == other:
+            return 0
+        elif self < other:
+            return -1
+        else:
+            return 1
+
+    def __str__(self):
+        return 'value=%s, %s, index=%d' % (self.value, 'START' if self.start_or_finish else 'FINISH', self.index)
+
+
+def use_least_halls(activities):
+    """
+    Ex 16.1-4. Found the solution from the internet. Basic idea is to sort the start and finish times of all activities,
+    and really simulate the process of selecting halls to use.
+    :param activities: Activities to schedule.
+    :return: Hall usage as a set of each hall's occupation sequence.
+    """
+    _check_input(activities)
+    n = len(activities)
+    hall_use_time_items = [None] * n * 2
+    index = 0
+    for activity in activities:
+        hall_use_time_items[index] = _HallUseTimeItem(value=activity.start_time,
+                                                      start_or_finish=True, index=index / 2)
+        index += 1
+        hall_use_time_items[index] = _HallUseTimeItem(value=activity.finish_time,
+                                                      start_or_finish=False, index=index / 2)
+        index += 1
+
+    sort(hall_use_time_items)
+
+    halls_per_activity = [-1] * n
+    hall_count = 0
+    available_halls = []
+    for hall_use_time_item in hall_use_time_items:
+        if not hall_use_time_item.start_or_finish:
+            assert halls_per_activity[hall_use_time_item.index] >= 0
+            available_halls.append(halls_per_activity[hall_use_time_item.index])
+        elif not available_halls:
+            halls_per_activity[hall_use_time_item.index] = hall_count
+            hall_count += 1
+        else:
+            halls_per_activity[hall_use_time_item.index] = available_halls.pop()
+
+    hall_usage = [[] for _ in xrange(0, hall_count)]
+    for i in xrange(0, len(halls_per_activity)):
+        hall_usage[halls_per_activity[i]].append(i)
+
+    for i in xrange(0, hall_count):
+        hall_usage[i] = tuple(hall_usage[i])
+    return set(hall_usage)
 
 
 class TestActivitySelection(unittest.TestCase):
     def test_activity_selection(self):
+        case_class = namedtuple('Case', 'desc activities expected_optimal_count expected_optimal_subsets')
         cases = (
-            Case(desc='Empty', activities=(), expected_optimal_count=0, expected_optimal_subsets=((),)),
-            Case(desc='Single', activities=(Activity(0, 1),), expected_optimal_count=1,
-                 expected_optimal_subsets=((0,),)),
-            Case(desc='Example in the book', activities=(
+            case_class(desc='Empty', activities=(), expected_optimal_count=0, expected_optimal_subsets=((),)),
+            case_class(desc='Single', activities=(Activity(0, 1),), expected_optimal_count=1,
+                       expected_optimal_subsets=((0,),)),
+            case_class(desc='Example in the book', activities=(
                 Activity(1, 4),
                 Activity(3, 5),
                 Activity(0, 6),
@@ -179,3 +261,64 @@ class TestActivitySelection(unittest.TestCase):
                     optimal_subset in case.expected_optimal_subsets,
                     msg='%s, optimal subset: %s not in %s' % (case.desc, optimal_subset, case.expected_optimal_subsets)
                 )
+
+    def test_using_least_halls(self):
+        case_class = namedtuple('Case', 'desc activities hall_usage')
+        cases = (
+            case_class(desc='Empty', activities=(), hall_usage=set()),
+            case_class(desc='Single', activities=(Activity(0, 1),), hall_usage=set([(0,)])),
+            case_class(desc='Triple #0', activities=(
+                Activity(1, 2),
+                Activity(2, 4),
+                Activity(4, 5),
+            ), hall_usage=set([(0, 1, 2)])),
+            case_class(desc='Triple #1', activities=(
+                Activity(1, 3),
+                Activity(2, 4),
+                Activity(3, 5),
+            ), hall_usage=set([(0, 2), (1,)])),
+            case_class(desc='Triple #2', activities=(
+                Activity(1, 4),
+                Activity(2, 5),
+                Activity(3, 6),
+            ), hall_usage=set([(0,), (1,), (2,)])),
+            case_class(desc='Example in the book for activity selection', activities=(
+                Activity(1, 4),
+                Activity(3, 5),
+                Activity(0, 6),
+                Activity(5, 7),
+                Activity(3, 9),
+                Activity(5, 9),
+                Activity(6, 10),
+                Activity(8, 11),
+                Activity(8, 12),
+                Activity(2, 14),
+                Activity(12, 16),
+            ), hall_usage=set((
+                (2, 6),
+                (0, 5),
+                (9,),
+                (1, 7),
+                (4,),
+                (8, 10),
+            ))),
+        )
+
+        for case in cases:
+            hall_usage = use_least_halls(case.activities)
+            self.assertEqual(len(hall_usage), len(case.hall_usage),
+                             msg='%s, Hall count %s != %s' % (case.desc, len(hall_usage), len(case.hall_usage)))
+            activity_indices = set(range(0, len(case.activities)))
+            for hall_usage_item in hall_usage:
+                for i in xrange(0, len(hall_usage_item)):
+                    if i > 0:
+                        self.assertTrue(case.activities[hall_usage_item[i - 1]].finish_time <=
+                                        case.activities[hall_usage_item[i]].start_time,
+                                        msg="%s, Wrong hall usage: %s" % (case.desc, hall_usage_item[i - 1]))
+                    self.assertTrue(hall_usage_item[i] in activity_indices,
+                                    msg='%s, activity %d has been visited or does not exist.'
+                                        % (case.desc, hall_usage_item[i]))
+                    activity_indices.remove(hall_usage_item[i])
+            self.assertTrue(len(activity_indices) == 0,
+                            "%s, activity indices unempty at the end: %s" % (case.desc, activity_indices))
+
