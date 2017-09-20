@@ -42,7 +42,7 @@ class MaxPriorityQueue(object):
     def get_max(self):
         """
         Gets the max priority element. Raises a ValueError if there is no element in the priority queue.
-        :return: The max prioirty element.
+        :return: The max priority element.
         """
         if len(self) <= 0:
             ValueError('This priority queue is empty')
@@ -51,15 +51,15 @@ class MaxPriorityQueue(object):
 
     def insert(self, new_elem):
         """
-        Inserts a new element into the prioirty queue in O(log n) time, Optimized by Ex 6.5-6
+        Inserts a new element into the priority queue in O(log n) time, Optimized by Ex 6.5-6
         :param new_elem: The new element to insert.
         """
         heap_insert(self._array, new_elem, self._key)
 
     def __len__(self):
         """
-        Gets the length of the prioirty queue.
-        :return: The length of the prioirty queue.
+        Gets the length of the priority queue.
+        :return: The length of the priority queue.
         """
         return len(self._array)
 
