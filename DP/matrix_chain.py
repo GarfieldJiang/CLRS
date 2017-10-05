@@ -96,9 +96,9 @@ class TestMatrixChain(unittest.TestCase):
     def test_matrix_chain_order_memoized(self):
         res, solution = matrix_chain_order_memoized(self.dims)
         self.assertEqual(self.res, res)
-        print(gen_solution_txt(solution))
+        # print(gen_solution_txt(solution))
 
     def test_matrix_chain_order_bottom_up(self):
         res, solution = matrix_chain_order_bottom_up(self.dims)
         self.assertEqual(self.res, res)
-        print(gen_solution_txt(solution))
+        # print(gen_solution_txt(solution))
