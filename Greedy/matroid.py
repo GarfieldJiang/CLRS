@@ -1,7 +1,7 @@
 from unittest import TestCase
 from collections import namedtuple
 from HeapSort.heap_sort import heap_sort
-from Queue import Queue
+from queue import Queue
 
 
 class WeightedEdge(object):
@@ -29,7 +29,7 @@ def _check_connectivity(adj_matrix, vertex_a, vertex_b, vertex_count, edge_count
     while not q.empty():
         v = q.get()
         visited.add(v)
-        for i in xrange(0, vertex_count):
+        for i in range(0, vertex_count):
             if i in visited:
                 continue
             if adj_matrix[v][i]:
@@ -52,8 +52,8 @@ def minimum_spanning_tree(adj_matrix):
 
     vertex_count = len(adj_matrix)
     weighted_edges = []
-    for i in xrange(0, vertex_count):
-        for j in xrange(0, i + 1):
+    for i in range(0, vertex_count):
+        for j in range(0, i + 1):
             if adj_matrix[i][j] >= 0:
                 weighted_edges.append(WeightedEdge(j, i, adj_matrix[i][j]))
 
@@ -64,9 +64,9 @@ def minimum_spanning_tree(adj_matrix):
         edge.new_weight = max_standard_weight + 1 - edge.standard_weight
 
     tree_edges = []
-    tree_edges_matrix = [[0 for _ in xrange(0, vertex_count)] for _ in xrange(0, vertex_count)]
+    tree_edges_matrix = [[0 for _ in range(0, vertex_count)] for _ in range(0, vertex_count)]
 
-    for i in xrange(0, edge_count):
+    for i in range(0, edge_count):
         edge = weighted_edges[i]
         if not _check_connectivity(tree_edges_matrix, edge.vertex_a, edge.vertex_b, vertex_count, edge_count):
             tree_edges.append((edge.vertex_a, edge.vertex_b))

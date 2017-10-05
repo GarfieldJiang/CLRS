@@ -19,19 +19,19 @@ def get_optimal_bst(p, q):
     if n == 0:
         return 1.0, []
 
-    e = [[-1 for _ in xrange(0, n + 1)] for _ in xrange(0, n + 1)]
-    root = [[-1 for _ in xrange(0, n)] for _ in xrange(0, n)]
+    e = [[-1 for _ in range(0, n + 1)] for _ in range(0, n + 1)]
+    root = [[-1 for _ in range(0, n)] for _ in range(0, n)]
 
-    for i in xrange(1, n + 1):
+    for i in range(1, n + 1):
         e[i][i] = (q[i - 1] + q[i]) * 2 + p[i]
         root[i - 1][i - 1] = i
 
-    for i in xrange(n + 1, 0, -1):
-        for j in xrange(i + 1, n + 1):
+    for i in range(n + 1, 0, -1):
+        for j in range(i + 1, n + 1):
             w = sum(q[i - 1:j + 1]) + sum(p[i:j + 1])
-            min_cost = sys.maxint
+            min_cost = sys.maxsize
             current_root = -1
-            for r in xrange(i, j + 1):
+            for r in range(i, j + 1):
                 assert (r == i or e[i][r - 1] > 0) and (r == j or e[r + 1][j] > 0)
                 e_left = q[i - 1] if r == i else e[i][r - 1]
                 e_right = q[j] if r == j else e[r + 1][j]
@@ -85,26 +85,26 @@ def get_optimal_bst_fast(p, q):
     n = len(p) - 1
     assert n >= 0
 
-    e = [[-1 for _ in xrange(0, n + 1)] for _ in xrange(0, n + 2)]
-    w = [[-1 for _ in xrange(0, n + 1)] for _ in xrange(0, n + 2)]
-    root = [[-1 for _ in xrange(0, n)] for _ in xrange(0, n)]
+    e = [[-1 for _ in range(0, n + 1)] for _ in range(0, n + 2)]
+    w = [[-1 for _ in range(0, n + 1)] for _ in range(0, n + 2)]
+    root = [[-1 for _ in range(0, n)] for _ in range(0, n)]
 
-    for i in xrange(1, n + 1):
+    for i in range(1, n + 1):
         root[i - 1][i - 1] = i
 
-    for i in xrange(1, n + 2):
+    for i in range(1, n + 2):
         e[i][i - 1] = q[i - 1]
         w[i][i - 1] = q[i - 1]
 
     # Calculate w matrix first.
-    for i in xrange(n + 1, 0, -1):
-        for j in xrange(i, n + 1):
+    for i in range(n + 1, 0, -1):
+        for j in range(i, n + 1):
             w[i][j] = w[i][j - 1] + p[j] + q[j]
 
-    for i in xrange(1, n + 1):
+    for i in range(1, n + 1):
         e[i][i] = e[i][i - 1] + e[i + 1][i] + w[i][i]
 
-    for j_i_diff in xrange(1, n):
+    for j_i_diff in range(1, n):
         i = 1
         r = root[0][j_i_diff - 1]
         while i + j_i_diff <= n:

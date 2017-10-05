@@ -52,14 +52,14 @@ class PrintingNeatlyDPV1(PrintingNeatlyBase):
         # - split_points is the split point h of f(i, j, k) so that f(i, j, k) is the combination of f(i, h - 1, k)
         #   and f(h, j, new_k), where new_k depends on last_line_used[i][h][k].
         # - new_k cache the new_k calculated since 0 is always an option.
-        states = [[[PrintingNeatlyDPV1.DPState() for _ in xrange(0, self._line_width)]
-                   for _ in xrange(0, n)] for _ in xrange(0, n)]
+        states = [[[PrintingNeatlyDPV1.DPState() for _ in range(0, self._line_width)]
+                   for _ in range(0, n)] for _ in range(0, n)]
 
-        for i in xrange(0, n):
-            for k in xrange(0, self._line_width):
+        for i in range(0, n):
+            for k in range(0, self._line_width):
                 state = states[i][i][k]
                 if k + self._word_lens[i] <= self._line_width:
-                    state.score = sys.maxint if k == 1 else\
+                    state.score = sys.maxsize if k == 1 else\
                         pow(self._line_width - k - self._word_lens[i], self._score_power)
                     state.last_line_used = k + self._word_lens[i]
                 else:
@@ -68,10 +68,10 @@ class PrintingNeatlyDPV1(PrintingNeatlyBase):
                     state.last_line_used = self._word_lens[i]
                 state.new_k = k
 
-        for ji_diff in xrange(1, n):
-            for i in xrange(0, n - ji_diff):  # starting word index (inclusive)
+        for ji_diff in range(1, n):
+            for i in range(0, n - ji_diff):  # starting word index (inclusive)
                 j = i + ji_diff  # ending word index (inclusive)
-                for k in xrange(0, self._line_width):  # starting space count of the first line.
+                for k in range(0, self._line_width):  # starting space count of the first line.
                     self.__calc_dp(i, j, k, n, states)
                     # print 'word_count=%d, n=%d, states[%d][%d][%d].score=%d' % (
                     #     ji_diff + 1, n, i, j, k, states[i][j][k].score
@@ -80,7 +80,7 @@ class PrintingNeatlyDPV1(PrintingNeatlyBase):
         line_break_flags = [False] * (n - 1)
         self.__retrieve_line_break_flags(0, n - 1, 0, states, line_break_flags)
         line_breaks = []
-        for i in xrange(0, n - 1):
+        for i in range(0, n - 1):
             if line_break_flags[i]:
                 line_breaks.append(i)
 
@@ -92,7 +92,7 @@ class PrintingNeatlyDPV1(PrintingNeatlyBase):
     def __calc_dp(self, i, j, k, n, states):
         current_state = states[i][j][k]
         old_score_should_reduce = -1
-        for h in xrange(i + 1, j + 1):
+        for h in range(i + 1, j + 1):
             left_state = states[i][h - 1][k]
             assert left_state.score >= 0
             new_k = left_state.last_line_used + 1
@@ -147,7 +147,7 @@ class PrintingNeatlyDPV2(PrintingNeatlyBase):
             return 0, ()
 
         n = len(self._word_lens)
-        states = [[PrintingNeatlyDPV2.DPState() for _ in xrange(0, self._line_width)] for _ in xrange(0, n)]
+        states = [[PrintingNeatlyDPV2.DPState() for _ in range(0, self._line_width)] for _ in range(0, n)]
         self.__calc_dp_states(n, states)
         final_score, line_breaks = self.__retrieve_result(n, states)
         return final_score, tuple(line_breaks)
@@ -166,7 +166,7 @@ class PrintingNeatlyDPV2(PrintingNeatlyBase):
     def __retrieve_result(self, n, states):
         line_breaks = []
         k = 0
-        for i in xrange(0, n):
+        for i in range(0, n):
             state = states[i][k]
             if state.new_line and i > 0:
                 k = self._word_lens[i] + 1
@@ -180,10 +180,10 @@ class PrintingNeatlyDPV2(PrintingNeatlyBase):
         return final_score, line_breaks
 
     def __calc_dp_states(self, n, states):
-        for k in xrange(0, self._line_width):
+        for k in range(0, self._line_width):
             state = states[n - 1][k]
             if k == 1:
-                state.score = sys.maxint
+                state.score = sys.maxsize
             elif k != 0 and k + self._word_lens[n - 1] <= self._line_width:
                 state.score = 0
                 state.new_line = False
@@ -191,11 +191,11 @@ class PrintingNeatlyDPV2(PrintingNeatlyBase):
                 state.score = 0 if k == 0 else pow(self._line_width - k + 1, self._score_power)
                 state.new_line = True
 
-        for i in xrange(n - 2, -1, -1):
-            for k in xrange(0, self._line_width):
+        for i in range(n - 2, -1, -1):
+            for k in range(0, self._line_width):
                 state = states[i][k]
                 if k == 1:
-                    state.score = sys.maxint
+                    state.score = sys.maxsize
                     continue
 
                 if k == 0 or k + self._word_lens[i] > self._line_width:
@@ -225,7 +225,7 @@ class PrintingNeatlyNaive(PrintingNeatlyBase):
 
         line_break_flags = [False] * (n - 1)
         opt_line_break_flags = [False] * (n - 1)
-        score = sys.maxint
+        score = sys.maxsize
         true_count = 0
 
         while True:
@@ -233,7 +233,7 @@ class PrintingNeatlyNaive(PrintingNeatlyBase):
             feasible, new_score = self.__add_words(current_line_used_count, line_break_flags, n)
             if feasible and new_score < score:
                 score = new_score
-                for i in xrange(n - 1):
+                for i in range(n - 1):
                     opt_line_break_flags[i] = line_break_flags[i]
 
             if true_count == n - 1:
@@ -242,7 +242,7 @@ class PrintingNeatlyNaive(PrintingNeatlyBase):
             true_count = PrintingNeatlyNaive.__next_line_break_flags(line_break_flags, n)
 
         line_breaks = []
-        for i in xrange(n - 1):
+        for i in range(n - 1):
             if opt_line_break_flags[i]:
                 line_breaks.append(i)
 
@@ -251,7 +251,7 @@ class PrintingNeatlyNaive(PrintingNeatlyBase):
     def __add_words(self, current_line_used_count, line_break_flags, n):
         new_score = 0
         feasible = True
-        for i in xrange(n):
+        for i in range(n):
             if current_line_used_count == 0:
                 current_line_used_count = self._word_lens[i]
             else:
@@ -269,7 +269,7 @@ class PrintingNeatlyNaive(PrintingNeatlyBase):
     def __next_line_break_flags(line_break_flags, n):
         true_count = 0
         carry = True
-        for i in xrange(n - 1):
+        for i in range(n - 1):
             if carry:
                 line_break_flags[i] = not line_break_flags[i]
 
@@ -284,30 +284,30 @@ def demo_print_neatly(paragraph, line_width, score_power, print_neatly_class):
     assert type(paragraph) is str
     assert issubclass(print_neatly_class, PrintingNeatlyBase)
     words = paragraph.split(' ')
-    word_lens = map(lambda word: len(word), words)
+    word_lens = [len(word) for word in words]
     start_time = time.time()
     score, line_breaks = print_neatly_class(word_lens, line_width, score_power).run()
     delta_time = time.time() - start_time
-    print 'DEMO PRINT NEATLY'
-    print 'class: %s, line width: %d, score: %d, time: %.3fs.' % (print_neatly_class.__name__, line_width, score, delta_time)
-    print '=' * (line_width + 2)
+    print('DEMO PRINT NEATLY')
+    print('class: %s, line width: %d, score: %d, time: %.3fs.' % (print_neatly_class.__name__, line_width, score, delta_time))
+    print('=' * (line_width + 2))
     line_break_index = 0
     next_line_break = line_breaks[0] if line_breaks else -1
     line_break_len = len(line_breaks)
     line = '|'
-    for word_index in xrange(0, len(words)):
+    for word_index in range(0, len(words)):
         if line == '|':
             line += words[word_index]
         else:
             line += ' ' + words[word_index]
         if word_index == next_line_break or word_index == len(words) - 1:
             line += ' ' * (line_width - len(line) + 1) + '|'
-            print line
+            print(line)
             line_break_index += 1
             line = '|'
             next_line_break = -1 if line_break_index >= line_break_len else line_breaks[line_break_index]
 
-    print '=' * (line_width + 2)
+    print('=' * (line_width + 2))
 
 
 class TestPrintNeatly(unittest.TestCase):
@@ -315,9 +315,9 @@ class TestPrintNeatly(unittest.TestCase):
     print_neatly_dp_classes = (PrintingNeatlyDPV1, PrintingNeatlyDPV2)
 
     def test_single_word(self):
-        for word_len in xrange(1, 11):
-            for line_width in xrange(word_len, 20):
-                for score_power in xrange(1, 5):
+        for word_len in range(1, 11):
+            for line_width in range(word_len, 20):
+                for score_power in range(1, 5):
                     for cls in self.print_neatly_classes:
                         score, line_breaks = cls((word_len,), line_width, score_power).run()
                         self.assertEqual(score, 0)
@@ -325,10 +325,10 @@ class TestPrintNeatly(unittest.TestCase):
 
     def test_double_words(self):
         score_power = 3
-        for word_len_0 in xrange(1, 3):
-            for word_len_1 in xrange(1, 3):
+        for word_len_0 in range(1, 3):
+            for word_len_1 in range(1, 3):
                 max_word_len = max(word_len_0, word_len_1)
-                for line_width in xrange(max_word_len, 10):
+                for line_width in range(max_word_len, 10):
                     for cls in self.print_neatly_classes:
                         score, line_breaks = cls((word_len_0, word_len_1), line_width, score_power).run()
                         if line_width >= word_len_0 + word_len_1 + 1:
@@ -381,11 +381,11 @@ class TestPrintNeatly(unittest.TestCase):
 
     def test_randomly(self):
         score_power = 3
-        for i in xrange(0, 100):
+        for i in range(0, 100):
             for cls in self.print_neatly_dp_classes:
                 word_count = random.randint(3, 13)
                 word_lens = []
-                for _ in xrange(word_count):
+                for _ in range(word_count):
                     word_lens.append(random.randint(1, 10))
                 max_word_len = max(word_lens)
                 line_width = random.randint(max_word_len, 10 * max_word_len)

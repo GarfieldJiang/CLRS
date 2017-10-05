@@ -37,14 +37,14 @@ def _check_independent(tasks, indices, length):
     :return: whether the tasks considered are independent.
     """
     deadline_counts = [0] * length
-    for i in xrange(0, length):
+    for i in range(0, length):
         task = tasks[indices[i]]
         if task.deadline - 1 >= length:
             continue
         deadline_counts[task.deadline - 1] += 1
 
     cumulative_deadline_counts = 0
-    for i in xrange(0, length):
+    for i in range(0, length):
         cumulative_deadline_counts += deadline_counts[i]
         if cumulative_deadline_counts > i + 1:
             return False
@@ -62,22 +62,22 @@ def schedule_task(tasks):
     _check_input_or_error(tasks)
     n = len(tasks)
     tasks = list(tasks)
-    for i in xrange(0, n):
+    for i in range(0, n):
         tasks[i].index = i
     heap_sort(tasks, lambda t: -t.penalty)
     schedule_on_sorted = [-1] * n
     early_count = 0
 
-    for i in xrange(0, n):
+    for i in range(0, n):
         schedule_on_sorted[early_count] = i
         if _check_independent(tasks, schedule_on_sorted, early_count + 1):
             early_count += 1
 
     schedule = [-1] * early_count
-    for i in xrange(0, early_count):
+    for i in range(0, early_count):
         schedule[i] = schedule_on_sorted[i]
     heap_sort(schedule, lambda index: tasks[index].deadline)
-    for i in xrange(0, early_count):
+    for i in range(0, early_count):
         schedule[i] = tasks[schedule[i]].index
 
     return tuple(schedule)

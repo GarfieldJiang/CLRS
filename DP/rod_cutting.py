@@ -16,7 +16,7 @@ def __rod_cutting_top_down_internal(prices, length, cached_revenues, first_piece
 
     revenue = -1
 
-    for i in xrange(1, length + 1):
+    for i in range(1, length + 1):
         new_val = prices[i] + __rod_cutting_top_down_internal(prices, length - i, cached_revenues, first_pieces)
 
         if revenue < new_val:
@@ -35,10 +35,10 @@ def rod_cutting_bottom_up(prices, length):
     cached_revenues = [-1] * (length + 1)
     cached_revenues[0] = 0
 
-    for k in xrange(1, length + 1):
+    for k in range(1, length + 1):
         revenue = -1
 
-        for i in xrange(1, k + 1):
+        for i in range(1, k + 1):
             if revenue < prices[i] + cached_revenues[k - i]:
                 revenue = prices[i] + cached_revenues[k - i]
                 first_pieces[k] = i  # ex 15.1-4
@@ -60,7 +60,7 @@ def fibonacci(n):
     if n > 0:
         vals[1] = 1
 
-    for i in xrange(2, n + 1):
+    for i in range(2, n + 1):
         vals[i] = vals[i - 1] + vals[i - 2]
 
     return vals[n]
@@ -74,16 +74,16 @@ class TestRodCutting(unittest.TestCase):
         self.first_pieces = (0, 1, 2, 3, 2, 2, 6, 1, 2, 3, 10)
 
     def test_top_down(self):
-        for length in xrange(1, len(self.prices)):
+        for length in range(1, len(self.prices)):
             self.assertEqual((self.revenues[length], self.first_pieces[length]),
                              rod_cutting_memoized(self.prices, length))
 
     def test_bottom_up(self):
-        for length in xrange(1, len(self.prices)):
+        for length in range(1, len(self.prices)):
             self.assertEqual((self.revenues[length], self.first_pieces[length]),
                              rod_cutting_bottom_up(self.prices, length))
 
     def test_fibonacci(self):
         answers = (1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89)
-        for n in xrange(0, len(answers)):
+        for n in range(0, len(answers)):
             self.assertEqual(answers[n], fibonacci(n))

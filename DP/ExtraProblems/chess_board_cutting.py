@@ -26,7 +26,7 @@ class ChessBoardCutter(object):
         assert n > 0 and type(n) is int, 'n must be an integer greater than zero.'
         assert board is not None, 'board must not be None.'
         self._m = len(board)
-        for i in xrange(0, self._m):
+        for i in range(0, self._m):
             assert len(board[i]) == self._m, 'board must be square.'
 
         self._board = board
@@ -55,25 +55,25 @@ class ChessBoardCutter(object):
             return 0.0
 
         score = -1
-        for new_h in xrange(1, h):
+        for new_h in range(1, h):
             new_score = self._get_score_for_one_and_n_minus_one(
                 (i, j, new_h, w, 1), (i + new_h, j, h - new_h, w, n - 1), n
             )
             score = ChessBoardCutter._update_score(score, new_score)
 
-        for new_h in xrange(1, h):
+        for new_h in range(1, h):
             new_score = self._get_score_for_one_and_n_minus_one(
                 (i + new_h, j, h - new_h, w, 1), (i, j, new_h, w, n - 1), n
             )
             score = ChessBoardCutter._update_score(score, new_score)
 
-        for new_w in xrange(1, w):
+        for new_w in range(1, w):
             new_score = self._get_score_for_one_and_n_minus_one(
                 (i, j, h, new_w, 1), (i, j + new_w, h, w - new_w, n - 1), n
             )
             score = ChessBoardCutter._update_score(score, new_score)
 
-        for new_w in xrange(1, w):
+        for new_w in range(1, w):
             new_score = self._get_score_for_one_and_n_minus_one(
                 (i, j + new_w, h, w - new_w, 1), (i, j, h, new_w, n - 1), n
             )

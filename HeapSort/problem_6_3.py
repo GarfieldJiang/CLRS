@@ -6,8 +6,8 @@ def _check_young_properties(young_tableau):
     m = young_tableau.m
     n = young_tableau.n
 
-    for i in xrange(0, m):
-        for j in xrange(0, n):
+    for i in range(0, m):
+        for j in range(0, n):
             if i < m - 1 and young_tableau.get(i, j) > young_tableau.get(i + 1, j):
                 return False
             if j < n - 1 and young_tableau.get(i, j) > young_tableau.get(i, j + 1):
@@ -23,12 +23,12 @@ class YoungTableau(object):
         if not matrix:
             self.m = m
             self.n = n
-            self.matrix = [[float('inf') for _ in xrange(0, n)] for _ in xrange(0, m)]
+            self.matrix = [[float('inf') for _ in range(0, n)] for _ in range(0, m)]
             return
 
         self.m = len(matrix)
         self.n = len(matrix[0])
-        self.matrix = [[matrix[i][j] for j in xrange(0, self.n)] for i in xrange(0, self.m)]
+        self.matrix = [[matrix[i][j] for j in range(0, self.n)] for i in range(0, self.m)]
         if not _check_young_properties(self):
             raise ValueError('Matrix provided does not comply with the Young tableau properties')
 
@@ -126,8 +126,8 @@ class TestYoungTableaux(TestCase):
         m = 3
         n = 4
         original_lists = (
-            [_ for _ in xrange(0, m * n)],
-            [_ for _ in xrange(m * n, 0, -1)],
+            [_ for _ in range(0, m * n)],
+            [_ for _ in range(m * n, 0, -1)],
             [1, 3, 1, 4, 1, 5, 2, 3, 2, 0, 2, -1],
         )
 

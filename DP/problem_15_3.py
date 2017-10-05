@@ -21,14 +21,14 @@ def get_shortest_bitonic_path(points):
         return 0, (points[0],)
 
     n = len(points)
-    distances = [[0 for _ in xrange(n)] for _ in xrange(n)]
-    for i in xrange(0, n - 1):
-        for j in xrange(i + 1, n):
+    distances = [[0 for _ in range(n)] for _ in range(n)]
+    for i in range(0, n - 1):
+        for j in range(i + 1, n):
             distances[i][j] = distances[j][i] = __get_euclidean_distance(points[i], points[j])
 
-    lengths = [-1 for _ in xrange(n - 1)]
-    second_right_most_l2r = [-1 for _ in xrange(n - 1)]
-    right_most_r2l = [-1 for _ in xrange(n - 1)]
+    lengths = [-1 for _ in range(n - 1)]
+    second_right_most_l2r = [-1 for _ in range(n - 1)]
+    right_most_r2l = [-1 for _ in range(n - 1)]
     right_most_r2l[0] = 0
     lengths[0] = 2 * distances[0][n - 1]
 
@@ -39,14 +39,14 @@ def get_shortest_bitonic_path(points):
     #   and points[n - 1], and points[k] as the right most point of the L2R part.
     # - second_right_most_l2r[k] (k = 0..i) is the second right most point of the L2R part of the shortest path made of
     #   points[0..k] and points[n - 1], and points[k] as the right msot points of the L2R part.
-    for i in xrange(1, n - 1):
-        for j in xrange(0, i):
+    for i in range(1, n - 1):
+        for j in range(0, i):
             new_length = lengths[j] + distances[j][i] + distances[i][n - 1] - distances[j][n - 1]
             if lengths[i] < 0 or new_length < lengths[i]:
                 lengths[i] = new_length
                 second_right_most_l2r[i] = j
                 right_most_r2l[i] = i - 1 if j < i - 1 else right_most_r2l[i - 1]
-        for j in xrange(0, i - 1):
+        for j in range(0, i - 1):
             lengths[j] += distances[i - 1][i] + distances[i][n - 1] - distances[i - 1][n - 1]
         w = right_most_r2l[i - 1]
         lengths[i - 1] += distances[w][i] + distances[i][n - 1] - distances[w][n - 1]
@@ -62,7 +62,7 @@ def get_shortest_bitonic_path(points):
         j = second_right_most_l2r[i]
         l2r_indices.insert(0, i)
 
-        for k in xrange(i - 1, j, -1):
+        for k in range(i - 1, j, -1):
             r2l_indices.append(k)
 
         i = j
@@ -80,15 +80,15 @@ def get_shortest_bitonic_path_2(points):
 
     logging.debug(points)
     n = len(points)
-    distances = [[0 for _ in xrange(0, n)] for _ in xrange(0, n)]
-    for i in xrange(0, n - 1):
-        for j in xrange(i + 1, n):
+    distances = [[0 for _ in range(0, n)] for _ in range(0, n)]
+    for i in range(0, n - 1):
+        for j in range(i + 1, n):
             distances[i][j] = distances[j][i] = __get_euclidean_distance(points[i], points[j])
 
-    path_lengths = [[float('inf') for _ in xrange(0, n)] for _ in xrange(0, n)]
-    predecessors = [[-1 for _ in xrange(0, n)] for _ in xrange(0, n)]
-    for i in xrange(0, n - 1):
-        for j in xrange(i + 1, n):
+    path_lengths = [[float('inf') for _ in range(0, n)] for _ in range(0, n)]
+    predecessors = [[-1 for _ in range(0, n)] for _ in range(0, n)]
+    for i in range(0, n - 1):
+        for j in range(i + 1, n):
             if i == 0 and j == 1:
                 path_lengths[i][j] = distances[i][j]
                 predecessors[i][j] = 0
@@ -98,7 +98,7 @@ def get_shortest_bitonic_path_2(points):
                 continue
 
             if j == i + 1:
-                for k in xrange(0, i):
+                for k in range(0, i):
                     new_l = path_lengths[k][i] + distances[k][i + 1]
                     if new_l < path_lengths[i][j]:
                         path_lengths[i][j] = new_l
@@ -129,9 +129,9 @@ def get_shortest_bitonic_path_2(points):
             i, j = i, k
 
     path = []
-    for i in xrange(len(tour_a) - 1, -1, -1):
+    for i in range(len(tour_a) - 1, -1, -1):
         path.append(points[tour_a[i]])
-    for i in xrange(0, len(tour_b)):
+    for i in range(0, len(tour_b)):
         path.append(points[tour_b[i]])
     return tour_length, tuple(path)
 
@@ -163,7 +163,7 @@ def get_shortest_bitonic_path_naive(points):
         l2r = 0
         r2l_path = [0]
         r2l = 0
-        for i in xrange(1, n - 1):
+        for i in range(1, n - 1):
             if not r2l_flags[i - 1]:
                 l2r += __get_euclidean_distance(points[i], points[l2r_path[len(l2r_path) - 1]])
                 l2r_path.append(i)
@@ -184,7 +184,7 @@ def get_shortest_bitonic_path_naive(points):
 
         carry = True
         true_count = 0
-        for i in xrange(n - 2):
+        for i in range(n - 2):
             if carry:
                 r2l_flags[i] = not r2l_flags[i]
                 carry = not r2l_flags[i]
@@ -194,7 +194,7 @@ def get_shortest_bitonic_path_naive(points):
     for index in shortest_path_l2r_path:
         path.append(points[index])
     path.append(points[n - 1])
-    for i in xrange(len(shortest_path_r2l_path) - 1, -1, -1):
+    for i in range(len(shortest_path_r2l_path) - 1, -1, -1):
         path.append(points[shortest_path_r2l_path[i]])
     # print path
     return shortest_path_len, tuple(path)

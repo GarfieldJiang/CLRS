@@ -16,7 +16,7 @@ def heap_right_child(i):
 
 
 def heap_parent(i):
-    return (i - 1) / 2
+    return (i - 1) // 2
 
 
 def max_heapify(array, root_index, heap_size=None, key=None):
@@ -62,7 +62,7 @@ def build_max_heap(array, heap_size=None, key=None):
     heap_size = heap_size or len(array)
     assert heap_size <= len(array), 'Heap size cannot exceed array length'
     key = key or default_key
-    for i in xrange(heap_size / 2 - 1, -1, -1):
+    for i in range(heap_size // 2 - 1, -1, -1):
         max_heapify(array, i, heap_size, key)
 
 
@@ -175,10 +175,10 @@ class TestHeap(unittest.TestCase):
         need_key_item_class = namedtuple('NeedKeyItem', 'key value')
         cases = (
             case_class(desc='Empty', array=[], key=None),
-            case_class(desc='Big sorted', array=[i for i in xrange(0, 8192)], key=None),
-            case_class(desc='Big inversely sorted', array=[999 - i for i in xrange(0, 1000)], key=None),
+            case_class(desc='Big sorted', array=[i for i in range(0, 8192)], key=None),
+            case_class(desc='Big inversely sorted', array=[999 - i for i in range(0, 1000)], key=None),
             case_class(desc='Need another key',
-                       array=[need_key_item_class(key=999-i, value=i) for i in xrange(0, 1000)], key=lambda x: x.key)
+                       array=[need_key_item_class(key=999-i, value=i) for i in range(0, 1000)], key=lambda x: x.key)
         )
         for case in cases:
             build_max_heap(case.array, key=case.key)
@@ -190,14 +190,14 @@ class TestHeap(unittest.TestCase):
         need_key_item_class = namedtuple('NeedKeyItem', 'key value')
         cases = (
             case_class(desc='Single', array=[1], key=None),
-            case_class(desc='Big sorted', array=[i for i in xrange(0, 100)], key=None),
-            case_class(desc='Big inversely sorted', array=[99 - i for i in xrange(0, 100)], key=None),
+            case_class(desc='Big sorted', array=[i for i in range(0, 100)], key=None),
+            case_class(desc='Big inversely sorted', array=[99 - i for i in range(0, 100)], key=None),
             case_class(desc='Need another key',
-                       array=[need_key_item_class(key=99-i, value=i) for i in xrange(0, 100)], key=lambda x: x.key)
+                       array=[need_key_item_class(key=99-i, value=i) for i in range(0, 100)], key=lambda x: x.key)
         )
         for case in cases:
             len_array = len(case.array)
-            for i in xrange(0, len_array):
+            for i in range(0, len_array):
                 array_copy = list(case.array)
                 build_max_heap(array_copy, key=case.key)
                 expected_deleted = array_copy[i]

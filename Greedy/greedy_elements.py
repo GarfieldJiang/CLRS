@@ -22,16 +22,16 @@ def do_01_knapsack(items, weight_limit):
         return 0
 
     n = len(items)
-    dp = [[-1 for _ in xrange(0, weight_limit + 1)] for _ in xrange(0, n + 1)]
+    dp = [[-1 for _ in range(0, weight_limit + 1)] for _ in range(0, n + 1)]
 
-    for i in xrange(0, n + 1):
+    for i in range(0, n + 1):
         dp[i][0] = 0
 
-    for w in xrange(0, weight_limit + 1):
+    for w in range(0, weight_limit + 1):
         dp[0][w] = 0
 
-    for w in xrange(1, weight_limit + 1):
-        for i in xrange(1, n + 1):
+    for w in range(1, weight_limit + 1):
+        for i in range(1, n + 1):
             no_choose_current = dp[i - 1][w]
             choose_current = 0
             if w >= items[i - 1].weight:
@@ -54,12 +54,12 @@ def plan_water_stops(positions, duration):
         return 0, ()
 
     n = len(positions)
-    for i in xrange(1, n):
+    for i in range(1, n):
         assert positions[i - 1] < positions[i]
     assert duration > 0
 
     stops = [0]
-    for i in xrange(1, n):
+    for i in range(1, n):
         last_stop_pos = positions[stops[-1]]
         if positions[i] - last_stop_pos > duration:  # No way to finish the trip.
             return -1, ()
@@ -186,7 +186,7 @@ class TestGreedyElements(unittest.TestCase):
                 self.assertAlmostEqual(opt_value, case.expected_opt_value,
                                        msg='%s, opt_value: %.2f != %.2f' %
                                            (case.desc, opt_value, case.expected_opt_value))
-                for i in xrange(0, len(selected_weights)):
+                for i in range(0, len(selected_weights)):
                     self.assertAlmostEqual(selected_weights[i], case.expected_selected_weights[i],
                                            msg='%s, selected_weights[%d]: %.2f != %.2f' %
                                                (case.desc, i, selected_weights[i], case.expected_selected_weights[i]))

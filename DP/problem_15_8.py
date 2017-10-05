@@ -15,26 +15,26 @@ def seam_carve(disruptivity_image):
         for disruptivity in row:
             assert isinstance(disruptivity, int) or isinstance(disruptivity, float), 'Disruptivity must be int or float'
 
-    opt_disruptivities = [[float('inf') for _ in xrange(0, n + 2)] for _ in xrange(0, m)]
+    opt_disruptivities = [[float('inf') for _ in range(0, n + 2)] for _ in range(0, m)]
 
-    for j in xrange(0, n):
+    for j in range(0, n):
         opt_disruptivities[m - 1][j + 1] = disruptivity_image[m - 1][j]
 
-    for i in xrange(m - 2, -1, -1):
-        for j in xrange(0, n):
+    for i in range(m - 2, -1, -1):
+        for j in range(0, n):
             opt_disruptivities[i][j + 1] = disruptivity_image[i][j] + min(
                 opt_disruptivities[i + 1][j], opt_disruptivities[i + 1][j + 1], opt_disruptivities[i + 1][j + 2]
             )
 
     start_j = -1
     opt_disruptivity = float('inf')
-    for j in xrange(0, n):
+    for j in range(0, n):
         if opt_disruptivities[0][j + 1] < opt_disruptivity:
             start_j = j
             opt_disruptivity = opt_disruptivities[0][j + 1]
 
     opt_seam = [start_j]
-    for i in xrange(0, m - 1):
+    for i in range(0, m - 1):
         for j in (start_j - 1, start_j, start_j + 1):
             if opt_disruptivities[i][start_j + 1] == disruptivity_image[i][start_j] + opt_disruptivities[i + 1][j + 1]:
                 start_j = j

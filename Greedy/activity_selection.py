@@ -24,7 +24,7 @@ def _check_input(activities):
     n = len(activities)
     assert isinstance(activities[0], Activity)
     assert activities[0].start_time >= 0 and activities[0].finish_time < float('inf')
-    for i in xrange(1, n):
+    for i in range(1, n):
         assert isinstance(activities[i], Activity)
         assert activities[i].finish_time >= activities[i].start_time
         assert activities[i].start_time >= 0 and activities[i].finish_time < float('inf')
@@ -45,8 +45,8 @@ def select_activity_dp_0(activities):
     opt_counts = [1] * n
     opt_predecessors = [-1] * n
 
-    for i in xrange(1, n):
-        for j in xrange(0, i):
+    for i in range(1, n):
+        for j in range(0, i):
             if activities[j].finish_time > activities[i].start_time:
                 continue
             if opt_counts[j] + 1 <= opt_counts[i]:
@@ -57,7 +57,7 @@ def select_activity_dp_0(activities):
     opt_index = 0
     opt_count = opt_counts[0]
 
-    for i in xrange(1, n):
+    for i in range(1, n):
         if opt_counts[i] > opt_count:
             opt_count = opt_counts[i]
             opt_index = i
@@ -98,14 +98,14 @@ def select_activity_dp_1(activities):
     # Add 2 dummy activities at the beginning and the end to facilitate subsequent calculation.
     activities = (Activity(-1, 0),) + activities + (Activity(activities[n - 1].finish_time, float('inf')),)
 
-    c = [[0 for _ in xrange(0, n + 2)] for _ in xrange(0, n + 2)]
-    first_selected = [[-1 for _ in xrange(n + 2)] for _ in xrange(0, n + 2)]
+    c = [[0 for _ in range(0, n + 2)] for _ in range(0, n + 2)]
+    first_selected = [[-1 for _ in range(n + 2)] for _ in range(0, n + 2)]
 
-    for j_i_diff in xrange(2, n + 2):
-        for i in xrange(0, n + 2 - j_i_diff):
+    for j_i_diff in range(2, n + 2):
+        for i in range(0, n + 2 - j_i_diff):
             j = i + j_i_diff
 
-            for k in xrange(i + 1, j):
+            for k in range(i + 1, j):
                 if activities[k].start_time < activities[i].finish_time\
                         or activities[k].finish_time > activities[j].start_time:
                     continue
@@ -139,7 +139,7 @@ def select_activity_greedy(activities):
 
     n = len(activities)
     res = [0]
-    for i in xrange(1, n):
+    for i in range(1, n):
         if activities[i].start_time >= activities[res[len(res) - 1]].finish_time:
             res.append(i)
     return len(res), tuple(res)
@@ -198,10 +198,10 @@ def use_least_halls(activities):
     index = 0
     for activity in activities:
         hall_use_time_items[index] = _HallUseTimeItem(value=activity.start_time,
-                                                      start_or_finish=True, index=index / 2)
+                                                      start_or_finish=True, index=index // 2)
         index += 1
         hall_use_time_items[index] = _HallUseTimeItem(value=activity.finish_time,
-                                                      start_or_finish=False, index=index / 2)
+                                                      start_or_finish=False, index=index // 2)
         index += 1
 
     sort(hall_use_time_items)
@@ -219,11 +219,11 @@ def use_least_halls(activities):
         else:
             halls_per_activity[hall_use_time_item.index] = available_halls.pop()
 
-    hall_usage = [[] for _ in xrange(0, hall_count)]
-    for i in xrange(0, len(halls_per_activity)):
+    hall_usage = [[] for _ in range(0, hall_count)]
+    for i in range(0, len(halls_per_activity)):
         hall_usage[halls_per_activity[i]].append(i)
 
-    for i in xrange(0, hall_count):
+    for i in range(0, hall_count):
         hall_usage[i] = tuple(hall_usage[i])
     return set(hall_usage)
 
@@ -266,22 +266,22 @@ class TestActivitySelection(unittest.TestCase):
         case_class = namedtuple('Case', 'desc activities hall_usage')
         cases = (
             case_class(desc='Empty', activities=(), hall_usage=set()),
-            case_class(desc='Single', activities=(Activity(0, 1),), hall_usage=set([(0,)])),
+            case_class(desc='Single', activities=(Activity(0, 1),), hall_usage={(0,)}),
             case_class(desc='Triple #0', activities=(
                 Activity(1, 2),
                 Activity(2, 4),
                 Activity(4, 5),
-            ), hall_usage=set([(0, 1, 2)])),
+            ), hall_usage={(0, 1, 2)}),
             case_class(desc='Triple #1', activities=(
                 Activity(1, 3),
                 Activity(2, 4),
                 Activity(3, 5),
-            ), hall_usage=set([(0, 2), (1,)])),
+            ), hall_usage={(0, 2), (1,)}),
             case_class(desc='Triple #2', activities=(
                 Activity(1, 4),
                 Activity(2, 5),
                 Activity(3, 6),
-            ), hall_usage=set([(0,), (1,), (2,)])),
+            ), hall_usage={(0,), (1,), (2,)}),
             case_class(desc='Example in the book for activity selection', activities=(
                 Activity(1, 4),
                 Activity(3, 5),
@@ -294,14 +294,7 @@ class TestActivitySelection(unittest.TestCase):
                 Activity(8, 12),
                 Activity(2, 14),
                 Activity(12, 16),
-            ), hall_usage=set((
-                (2, 6),
-                (0, 5),
-                (9,),
-                (1, 7),
-                (4,),
-                (8, 10),
-            ))),
+            ), hall_usage={(2, 6), (0, 5), (9,), (1, 7), (4,), (8, 10)}),
         )
 
         for case in cases:
@@ -310,7 +303,7 @@ class TestActivitySelection(unittest.TestCase):
                              msg='%s, Hall count %s != %s' % (case.desc, len(hall_usage), len(case.hall_usage)))
             activity_indices = set(range(0, len(case.activities)))
             for hall_usage_item in hall_usage:
-                for i in xrange(0, len(hall_usage_item)):
+                for i in range(0, len(hall_usage_item)):
                     if i > 0:
                         self.assertTrue(case.activities[hall_usage_item[i - 1]].finish_time <=
                                         case.activities[hall_usage_item[i]].start_time,

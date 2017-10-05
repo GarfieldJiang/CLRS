@@ -32,16 +32,16 @@ def longest_simple_path_directed_acyclic_graph(adj, src, dst):
     if n == 0:
         return float('nan'), ()
 
-    for i in xrange(0, n):
+    for i in range(0, n):
         assert n == len(adj[i])
 
     if src < 0 or dst >= n or src >= dst:
         return float('nan'), ()
 
-    path_lens = [[float('nan') for _ in xrange(src + 1, dst + 1)] for _ in xrange(src, dst)]
-    path_nodes = [[-1 for _ in xrange(src + 1, dst + 1)] for _ in xrange(src, dst)]
-    for i in xrange(dst, src - 1, -1):
-        for j in xrange(i + 1, dst + 1):
+    path_lens = [[float('nan') for _ in range(src + 1, dst + 1)] for _ in range(src, dst)]
+    path_nodes = [[-1 for _ in range(src + 1, dst + 1)] for _ in range(src, dst)]
+    for i in range(dst, src - 1, -1):
+        for j in range(i + 1, dst + 1):
             assert math.isnan(path_lens[i - src][j - src - 1])
             path_lens[i - src][j - src - 1] = adj[i][j]
             if not math.isnan(path_lens[i - src][j - src - 1]):
@@ -50,7 +50,7 @@ def longest_simple_path_directed_acyclic_graph(adj, src, dst):
             if j == i + 1:
                 continue
 
-            for k in xrange(i + 1, j):
+            for k in range(i + 1, j):
                 pik = path_lens[i - src][k - src - 1]
                 pkj = path_lens[k - src][j - src - 1]
                 pij = path_lens[i - src][j - src - 1]
@@ -145,10 +145,10 @@ class TestLongestSimplePathOfDirectedAcyclicGraph(unittest.TestCase):
     def test_a_complete_graph(self):
         adj = [[self.nan if i >= j else 1 for j in range(0, 30)] for i in range(0, 30)]
 
-        for i in xrange(0, len(adj)):
-            for j in xrange(i + 1, len(adj[0])):
+        for i in range(0, len(adj)):
+            for j in range(i + 1, len(adj[0])):
                 path_len, path = longest_simple_path_directed_acyclic_graph(adj, i, j)
                 self.assertEqual(path_len, j - i)
                 self.assertEqual(len(path), j - i + 1)
-                for k in xrange(i, j + 1):
+                for k in range(i, j + 1):
                     self.assertEqual(path[k - i], k)

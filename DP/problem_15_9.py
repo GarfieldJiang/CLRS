@@ -1,5 +1,5 @@
 import unittest
-import Queue
+import queue
 import logging
 
 
@@ -21,19 +21,19 @@ def calc_string_break_order(n, break_points):
     for bp in break_points:
         break_flags[bp] = True
 
-    c = [[float('inf') for _ in xrange(0, n)] for _ in xrange(0, n)]
-    for i in xrange(0, n):
+    c = [[float('inf') for _ in range(0, n)] for _ in range(0, n)]
+    for i in range(0, n):
         c[i][i] = 0
 
-    first_break_points = [[-1 for _ in xrange(0, n)] for _ in xrange(0, n)]
+    first_break_points = [[-1 for _ in range(0, n)] for _ in range(0, n)]
 
-    for j_i_diff in xrange(1, n):
-        for i in xrange(0, n - j_i_diff):
+    for j_i_diff in range(1, n):
+        for i in range(0, n - j_i_diff):
             j = i + j_i_diff
             cost = c[i][j]
 
             has_break_flags = False
-            for k in xrange(i, j):
+            for k in range(i, j):
                 if not break_flags[k]:
                     continue
                 has_break_flags = True
@@ -48,7 +48,7 @@ def calc_string_break_order(n, break_points):
             c[i][j] = cost
 
     break_order = []
-    q = Queue.Queue()
+    q = queue.Queue()
     logging.debug('queue: push (%d, %d)' % (0, n - 1))
     q.put((0, n - 1))
     while not q.empty():

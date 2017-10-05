@@ -27,7 +27,7 @@ RIGHT = (
 
 
 def __match(a, b):
-    for i in xrange(0, len(LEFT)):
+    for i in range(0, len(LEFT)):
         if a == LEFT[i]:
             return b == RIGHT[i]
 
@@ -47,13 +47,13 @@ def add_to_make_valid_parantheses(s):
     for c in s:
         assert c in LEFT or c in RIGHT, "Input string contains illegal symbols"
 
-    b = [[-1 for _ in xrange(0, n + 1)] for _ in xrange(0, n + 1)]
-    for i in xrange(1, n + 1):
+    b = [[-1 for _ in range(0, n + 1)] for _ in range(0, n + 1)]
+    for i in range(1, n + 1):
         b[i][i - 1] = 0
         b[i][i] = 1
 
-    for ji_diff in xrange(1, n):
-        for i in xrange(1, n + 1 - ji_diff):
+    for ji_diff in range(1, n):
+        for i in range(1, n + 1 - ji_diff):
             j = i + ji_diff
             if __same_side(s[i - 1], s[j - 1]):
                 if s[i] in LEFT:
@@ -62,7 +62,7 @@ def add_to_make_valid_parantheses(s):
                     b[i][j] = b[i + 1][j] + 1
                 continue
 
-            for k in xrange(i + 1, j + 1):
+            for k in range(i + 1, j + 1):
                 new_val = b[i][k - 1] + b[k][j]
                 if b[i][j] < 0 or b[i][j] > new_val:
                     b[i][j] = new_val

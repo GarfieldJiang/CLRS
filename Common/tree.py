@@ -4,7 +4,7 @@ from unittest import TestCase
 class GenericTreeNode(object):
     def __init__(self, child_capacity):
         assert isinstance(child_capacity, int) and child_capacity > 0
-        self._children = [None for _ in xrange(0, child_capacity)]
+        self._children = [None for _ in range(0, child_capacity)]
         self._parent = None
 
     @property
@@ -87,7 +87,7 @@ def pre_order_traverse_tree(root, visit):
         return
 
     visit(root)
-    for i in xrange(0, root.child_capacity):
+    for i in range(0, root.child_capacity):
         pre_order_traverse_tree(root[i], visit)
 
 

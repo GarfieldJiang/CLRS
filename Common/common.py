@@ -24,7 +24,7 @@ def binary_search_eq(x, beg, end, val):
         return -1
 
     while end - beg > 1:
-        mid = beg + (end - beg) / 2
+        mid = beg + (end - beg) // 2
         if x[mid] == val:
             return mid
 
@@ -52,7 +52,7 @@ def binary_search_ge(x, beg, end, val):
 
     original_end = end
     while end - beg > 1:
-        mid = beg + (end - beg) / 2
+        mid = beg + (end - beg) // 2
         if x[mid] == val:
             return mid
 

@@ -29,8 +29,8 @@ def build_binary_huffman_tree(symbol_freqs):
         return None
 
     n = len(symbol_freqs)
-    nodes = [None for _ in xrange(0, n)]
-    for i in xrange(0, n):
+    nodes = [None for _ in range(0, n)]
+    for i in range(0, n):
         nodes[i] = BinaryCodeTreeNode(i, symbol_freqs[i])
     pq = MaxPriorityQueue(nodes, key=lambda node: -node.freq)
     while len(pq) > 1:

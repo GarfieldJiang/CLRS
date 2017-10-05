@@ -20,9 +20,9 @@ def sign_free_agent_players(players, position_count, budget):
         return 0, set()
 
     p = len(players)
-    dp = [[0 for _ in xrange(0, budget + 1)] for _ in xrange(0, position_count)]
-    sign_flag_matrix = [[-1 for _ in xrange(0, budget + 1)] for _ in xrange(0, position_count)]
-    for x in xrange(0, budget + 1):
+    dp = [[0 for _ in range(0, budget + 1)] for _ in range(0, position_count)]
+    sign_flag_matrix = [[-1 for _ in range(0, budget + 1)] for _ in range(0, position_count)]
+    for x in range(0, budget + 1):
         player_index = -1
         for player in players:
             player_index += 1
@@ -30,13 +30,13 @@ def sign_free_agent_players(players, position_count, budget):
                 dp[0][x] = player.vorp
                 sign_flag_matrix[0][x] = player_index
 
-    for i in xrange(1, position_count):
-        for x in xrange(0, budget + 1):
-            for y in xrange(0, x + 1):
+    for i in range(1, position_count):
+        for x in range(0, budget + 1):
+            for y in range(0, x + 1):
                 prev_sign_flags = _get_sign_flags(i - 1, y, players, sign_flag_matrix)
                 last_player_vorp = 0
                 last_player_index = -1
-                for player_index in xrange(0, p):
+                for player_index in range(0, p):
                     player = players[player_index]
                     if prev_sign_flags[player_index] or player.position != i:
                         continue
@@ -54,14 +54,14 @@ def sign_free_agent_players(players, position_count, budget):
 
     max_vorp = 0
     opt_budget = 0
-    for x in xrange(0, budget + 1):
+    for x in range(0, budget + 1):
         if dp[position_count - 1][x] > max_vorp:
             max_vorp = dp[position_count - 1][x]
             opt_budget = x
 
     sign_flags = _get_sign_flags(position_count - 1, opt_budget, players, sign_flag_matrix)
     sign_flag_set = set()
-    for i in xrange(0, p):
+    for i in range(0, p):
         if sign_flags[i]:
             sign_flag_set.add(i)
 
@@ -71,7 +71,7 @@ def sign_free_agent_players(players, position_count, budget):
 def _get_sign_flags(i, y, players, sign_flag_matrix):
     sign_flags = [False] * len(players)
     z = y
-    for j in xrange(i, -1, -1):
+    for j in range(i, -1, -1):
         player_index = sign_flag_matrix[j][z]
         if player_index >= 0:
             sign_flags[player_index] = True

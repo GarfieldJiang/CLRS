@@ -16,21 +16,21 @@ def plan_inventory(demands, fixed_productivity, extra_cost_per_machine, holding_
         return 0, ()
 
     n = len(demands)
-    cumulative_demands = [demands[i] for i in xrange(0, n)]
-    for i in xrange(1, n):
+    cumulative_demands = [demands[i] for i in range(0, n)]
+    for i in range(1, n):
         cumulative_demands[i] += cumulative_demands[i - 1]
     sum_d = cumulative_demands[n - 1]
 
-    dp = [[-1 for _ in xrange(0, sum_d + 1)] for _ in xrange(0, n)]
-    last_month_plan = [[-1 for _ in xrange(0, sum_d + 1)] for _ in xrange(0, n)]
-    for j in xrange(cumulative_demands[0], sum_d + 1):
+    dp = [[-1 for _ in range(0, sum_d + 1)] for _ in range(0, n)]
+    last_month_plan = [[-1 for _ in range(0, sum_d + 1)] for _ in range(0, n)]
+    for j in range(cumulative_demands[0], sum_d + 1):
         dp[0][j] = max(0, extra_cost_per_machine * (j - fixed_productivity))\
                    + holding_cost_func(j - cumulative_demands[0])
         last_month_plan[0][j] = 0
 
-    for i in xrange(1, n):
-        for j in xrange(cumulative_demands[i], sum_d + 1):
-            for k in xrange(cumulative_demands[i - 1], j + 1):
+    for i in range(1, n):
+        for j in range(cumulative_demands[i], sum_d + 1):
+            for k in range(cumulative_demands[i - 1], j + 1):
                 if dp[i - 1][k] < 0:
                     continue
 
@@ -43,9 +43,9 @@ def plan_inventory(demands, fixed_productivity, extra_cost_per_machine, holding_
                     dp[i][j] = new_cost
                     last_month_plan[i][j] = k
 
-    plan = [0 for _ in xrange(0, n)]
+    plan = [0 for _ in range(0, n)]
     k = sum_d
-    for i in xrange(n - 1, -1, -1):
+    for i in range(n - 1, -1, -1):
         plan[i] = k - last_month_plan[i][k]
         k = last_month_plan[i][k]
 

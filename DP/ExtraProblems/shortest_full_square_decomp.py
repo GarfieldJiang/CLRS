@@ -23,7 +23,7 @@ def get_shortest_full_square_decomp(n):
     if n == rounded_root * rounded_root:
         return 1, {rounded_root: 1}
 
-    for i in xrange(1, n + 1):
+    for i in range(1, n + 1):
         assert dp[i] < 0
         rounded_root_i = __get_rounded_sqrt(i)
         if i == rounded_root_i * rounded_root_i:
@@ -92,15 +92,15 @@ def print_decomp(n, decomp):
         else:
             text += '%d * (%d)^2' % (item[1], item[0])
 
-    print text
+    print(text)
 
 
 def __main():
-    for n in xrange(38000, 38031):
+    for n in range(38000, 38031):
         start_time = time.time()
         _, decomp = get_shortest_full_square_decomp(n)
         end_time = time.time()
-        print "Decompsing %d takes %.2fs." % (n, end_time - start_time)
+        print("Decompsing %d takes %.2fs." % (n, end_time - start_time))
         print_decomp(n, decomp)
 
 

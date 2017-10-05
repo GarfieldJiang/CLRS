@@ -46,10 +46,10 @@ def viterbi(adj_matrix, label_sequence, starting_vertex):
     for l in label_sequence:
         assert isinstance(l, int) and l > 0, "label ids must be positive integers."
 
-    p = [[0 for _ in xrange(0, k)] for _ in xrange(0, n)]
-    for j in xrange(k - 1, -1, -1):
-        for beg in xrange(0, n):
-            for end in xrange(0, n):
+    p = [[0 for _ in range(0, k)] for _ in range(0, n)]
+    for j in range(k - 1, -1, -1):
+        for beg in range(0, n):
+            for end in range(0, n):
                 if not adj_matrix[beg][end]:  # No edge from i to r.
                     continue
 
@@ -67,9 +67,9 @@ def viterbi(adj_matrix, label_sequence, starting_vertex):
         return 0, NO_SUCH_PATH
 
     path = [starting_vertex]
-    for j in xrange(0, k):
+    for j in range(0, k):
         beg = path[j]
-        for end in xrange(0, n):
+        for end in range(0, n):
             later_prob = 1 if j == k - 1 else p[end][j + 1]
             if adj_matrix[beg][end] and adj_matrix[beg][end].label_id == label_sequence[j]\
                     and round(p[beg][j] - adj_matrix[beg][end].probability * later_prob, PROBABILITY_PRECISION) == 0:

@@ -16,14 +16,14 @@ def get_lcs_len_bottomup(x, y):
     n = len(y)
     c = [[-1 for _ in range(n + 1)] for _ in range(m + 1)]
 
-    for i in xrange(m + 1):
+    for i in range(m + 1):
         c[i][0] = 0
 
-    for j in xrange(1, n + 1):
+    for j in range(1, n + 1):
         c[0][j] = 0
 
-    for i in xrange(1, m + 1):
-        for j in xrange(1, n + 1):
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
             if x[i - 1] == y[j - 1]:
                 c[i][j] = c[i - 1][j - 1] + 1
             else:
@@ -74,7 +74,7 @@ def get_lmis_uselcs(x):
     y = sorted(x)  # O(n * log(n))
     z = []
 
-    for i in xrange(0, n):
+    for i in range(0, n):
         if i == 0 or y[i - 1] != y[i]:
             z.append(y[i])
 
@@ -98,10 +98,10 @@ def get_lmis_direct(x):
     last_indices = [-1] * n
     lmis_lengths = [1] * n
 
-    for i in xrange(1, n):
+    for i in range(1, n):
         last_index = -1
         lmis_len = 1
-        for j in xrange(0, i):
+        for j in range(0, i):
             if x[j] < x[i] and lmis_len < lmis_lengths[j] + 1:
                 last_index = j
                 lmis_len = lmis_lengths[j] + 1
@@ -111,7 +111,7 @@ def get_lmis_direct(x):
 
     last_index = 0
     lmis_len = 1
-    for i in xrange(1, n):
+    for i in range(1, n):
         if lmis_lengths[i] > lmis_len:
             last_index = i
             lmis_len = lmis_lengths[i]
@@ -143,7 +143,7 @@ def get_lmis_quick(x):
 
     lmis_len = 1
 
-    for i in xrange(1, n):
+    for i in range(1, n):
         if x[i] > min_last_elems[lmis_len - 1]:
             # x[i] is greater than the minimum last element of the LMISes of length lmis_len.
 
@@ -229,7 +229,7 @@ class TestLCS(unittest.TestCase):
                     k = len(z)
                     c = get_lcs_len_method(x, y)
                     self.assertEqual(len(c), m + 1)
-                    for i in xrange(m + 1):
+                    for i in range(m + 1):
                         self.assertEqual(len(c[i]), n + 1)
                     self.assertEqual(c[m][n], k)  # Length of LCS
                     self.assertEqual(get_lcs_method(x, y, c), z)  # LCS

@@ -15,22 +15,22 @@ def get_longest_palindrome_subsequence(s):
     lengths = __calc_lps_length(s, n)
 
     max_len = lengths[0][n]
-    p = [None for _ in xrange(0, max_len)]
+    p = [None for _ in range(0, max_len)]
     __build_lps(s, lengths, 0, n, p, 0, len(p))
 
     return tuple(p)
 
 
 def __calc_lps_length(s, n):
-    lengths = [[-1 for _ in xrange(0, n + 1)] for _ in xrange(0, n + 1)]
+    lengths = [[-1 for _ in range(0, n + 1)] for _ in range(0, n + 1)]
 
-    for beg in xrange(0, n + 1):
+    for beg in range(0, n + 1):
         lengths[beg][beg] = 0
         if beg != n:
             lengths[beg][beg + 1] = 1
 
-    for end_beg in xrange(2, n + 1):
-        for beg in xrange(n - end_beg, -1, -1):
+    for end_beg in range(2, n + 1):
+        for beg in range(n - end_beg, -1, -1):
             end = beg + end_beg
             assert lengths[beg + 1][end - 1] >= 0
             assert lengths[beg + 1][end] >= 0

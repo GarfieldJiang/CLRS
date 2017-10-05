@@ -4,8 +4,8 @@ import sys
 
 def matrix_chain_order_memoized(dims):
     matrix_count = __assert_dims_and_fetch_matrix_count(dims)
-    cache = [[None for _ in xrange(0, matrix_count)] for _ in xrange(0, matrix_count)]
-    solution = [[None for _ in xrange(0, matrix_count)] for _ in xrange(0, matrix_count)]
+    cache = [[None for _ in range(0, matrix_count)] for _ in range(0, matrix_count)]
+    solution = [[None for _ in range(0, matrix_count)] for _ in range(0, matrix_count)]
     optimal = __matrix_chain_order_memoized_internal(dims, 0, matrix_count - 1, cache, solution)
     return optimal, solution
 
@@ -19,10 +19,10 @@ def __matrix_chain_order_memoized_internal(dims, beg, end, cache, solution):
         cache[beg][end] = 0
         return cache[beg][end]
 
-    optimal = sys.maxint
+    optimal = sys.maxsize
     new_solution = None
 
-    for i in xrange(beg, end):
+    for i in range(beg, end):
         left = __matrix_chain_order_memoized_internal(dims, beg, i, cache, solution)
         right = __matrix_chain_order_memoized_internal(dims, i + 1, end, cache, solution)
         concat = dims[beg] * dims[i + 1] * dims[end + 1]
@@ -40,13 +40,13 @@ def __matrix_chain_order_memoized_internal(dims, beg, end, cache, solution):
 def matrix_chain_order_bottom_up(dims):
     matrix_count = __assert_dims_and_fetch_matrix_count(dims)
 
-    cache = [[None for _ in xrange(0, matrix_count)] for _ in xrange(0, matrix_count)]
-    solution = [[None for _ in xrange(0, matrix_count)] for _ in xrange(0, matrix_count)]
+    cache = [[None for _ in range(0, matrix_count)] for _ in range(0, matrix_count)]
+    solution = [[None for _ in range(0, matrix_count)] for _ in range(0, matrix_count)]
 
-    for end in xrange(0, matrix_count):
+    for end in range(0, matrix_count):
         cache[end][end] = 0
-        for beg in xrange(end - 1, -1, -1):
-            for i in xrange(beg, end):
+        for beg in range(end - 1, -1, -1):
+            for i in range(beg, end):
                 val = cache[beg][i] + cache[i + 1][end] + dims[beg] * dims[i + 1] * dims[end + 1]
                 if cache[beg][end] is None or cache[beg][end] > val:
                     cache[beg][end] = val
@@ -96,9 +96,9 @@ class TestMatrixChain(unittest.TestCase):
     def test_matrix_chain_order_memoized(self):
         res, solution = matrix_chain_order_memoized(self.dims)
         self.assertEqual(self.res, res)
-        print gen_solution_txt(solution)
+        print(gen_solution_txt(solution))
 
     def test_matrix_chain_order_bottom_up(self):
         res, solution = matrix_chain_order_bottom_up(self.dims)
         self.assertEqual(self.res, res)
-        print gen_solution_txt(solution)
+        print(gen_solution_txt(solution))

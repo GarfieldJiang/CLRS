@@ -1,4 +1,4 @@
-from heap import max_heapify, build_max_heap, heap_insert
+from .heap import max_heapify, build_max_heap, heap_insert
 from Common.common import default_key
 from Common.sort_utilities import check_is_sorted
 from unittest import TestCase
@@ -89,7 +89,7 @@ def merge_sorted_lists(sorted_lists, reverse_key=None):
             return reverse_key(cur_list[elem_index])
 
     nodes = []
-    for i in xrange(0, k):
+    for i in range(0, k):
         nodes.append(Node(i))
 
     merged_list = []

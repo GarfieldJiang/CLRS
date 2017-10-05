@@ -189,11 +189,11 @@ def get_edit_distance(x, y, op_costs):
     """
     m = len(x)
     n = len(y)
-    c = [[-1 for _ in xrange(0, n + 1)] for _ in xrange(0, m + 1)]
+    c = [[-1 for _ in range(0, n + 1)] for _ in range(0, m + 1)]
     c[0][0] = 0
-    cached_ops = [[None for _ in xrange(0, n + 1)] for _ in xrange(0, m + 1)]
-    for i_j_sum in xrange(1, m + n + 1):
-        for i in xrange(max(0, i_j_sum - n), i_j_sum + 1):
+    cached_ops = [[None for _ in range(0, n + 1)] for _ in range(0, m + 1)]
+    for i_j_sum in range(1, m + n + 1):
+        for i in range(max(0, i_j_sum - n), i_j_sum + 1):
             j = i_j_sum - i
             if i > m or j > n:
                 continue
@@ -227,7 +227,7 @@ def get_edit_distance(x, y, op_costs):
                 cost = _update_cost(cost, new_cost, cached_op, Operations.TWIDDLE, char, i - 2, j - 2)
 
             if Operations.KILL in op_costs and j == n:  # Kill must be the last operation, so j must be already n.
-                for i_1 in xrange(0, i):
+                for i_1 in range(0, i):
                     assert c[i_1][j] >= 0
                     new_cost = c[i_1][j] + op_costs[Operations.KILL]
                     cost = _update_cost(cost, new_cost, cached_op, Operations.KILL, char, i_1, j)
@@ -323,9 +323,9 @@ def print_dna_alignment(x, y, ops):
         i = op.i_increment(i, m)
         j = op.j_increment(j, n)
 
-    print ''.join(x_row)
-    print ''.join(y_row)
-    print ''.join(score_row)
+    print(''.join(x_row))
+    print(''.join(y_row))
+    print(''.join(score_row))
 
 
 class TestEditDistance(unittest.TestCase):
@@ -458,7 +458,7 @@ class TestEditDistance(unittest.TestCase):
                              msg="From '%s' to '%s', %s, ops len is %d, expected ops len is %d"
                                  % (x, y, desc, len(ops), len(expected_ops)))
             op_len = len(ops)
-            for i in xrange(0, op_len):
+            for i in range(0, op_len):
                 self.assertEqual(ops[i], expected_ops[i],
                                  msg="From '%s' to '%s', %s, operation %d, op is [%s], expected op is [%s]"
                                      % (x, y, desc, i, ops[i], expected_ops[i]))
@@ -480,11 +480,11 @@ def _on_op(list_x, list_z, i, j, op):
     z = list_z[0:j]
     z = ''.join(z) + '_'
     z = '%-30s' % z
-    print ''.join([op_str, x, z])
+    print(''.join([op_str, x, z]))
 
 
 def _demo_part_a():
-    print '==================== PART A ===================='
+    print('==================== PART A ====================')
     x = 'algorithm'
     y = 'altruistic'
     op_costs = {
@@ -496,16 +496,16 @@ def _demo_part_a():
         Operations.KILL: 1,
     }
     cost, ops = get_edit_distance(x, y, op_costs)
-    print 'Transforming x=\'%s\' to y=\'%s\', cost=%.2f' % (x, y, cost)
+    print('Transforming x=\'%s\' to y=\'%s\', cost=%.2f' % (x, y, cost))
     run_ops(list(x), [None] * len(y), ops, _on_op)
 
 
 def _demo_part_b():
-    print '==================== PART B ===================='
+    print('==================== PART B ====================')
     x = 'GATCGGCAT'
     y = 'CAATGTGAATC'
     similarity, ops = get_dna_sequence_similarity(x, y)
-    print 'Aligning: \'%s\' and \'%s\' Similarity: %.2f' % (x, y, similarity)
+    print('Aligning: \'%s\' and \'%s\' Similarity: %.2f' % (x, y, similarity))
     print_dna_alignment(x, y, ops)
 
 
