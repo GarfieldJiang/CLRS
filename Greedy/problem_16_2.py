@@ -2,6 +2,7 @@ from unittest import TestCase
 from collections import namedtuple
 from HeapSort.priority_queue import MaxPriorityQueue
 from HeapSort.heap_sort import heap_sort
+from typing import Sequence
 
 
 class Task(object):
@@ -26,14 +27,14 @@ class Task(object):
         return self._processing_time
 
 
-def _populate_queue(tasks: list, index: int, q: MaxPriorityQueue, current_time: int) -> int:
+def _populate_queue(tasks: Sequence[Task], index: int, q: MaxPriorityQueue, current_time: int) -> int:
     while index < len(tasks) and tasks[index].release_time == current_time:
         q.insert(tasks[index])
         index += 1
     return index
 
 
-def schedule_tasks(tasks: tuple) -> tuple:
+def schedule_tasks(tasks: Sequence[Task]) -> tuple:
     """
     Problem 16-2(b). Simulates the procedure of processing all the tasks. Running time is O(N log n) where n is the
     number of input tasks and N is the completion time of the whole procedure. Moreover, N <= R + nP, where R is the
