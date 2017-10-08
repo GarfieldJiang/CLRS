@@ -15,7 +15,7 @@ class MaxPriorityQueue(object):
         :param key: key getter function.
         :return: A well-initialized max priority queue.
         """
-        self._array = init_array
+        self._array = init_array or []
         self._key = default_key if key is None else key
         if not init_array:
             return
