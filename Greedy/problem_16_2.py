@@ -35,7 +35,7 @@ def _populate_queue(tasks: list, index: int, q: MaxPriorityQueue, current_time: 
 
 def schedule_tasks(tasks: tuple) -> tuple:
     """
-    Problem 16-2(b). Simulate the procedure of processing all the tasks. Running time is O(N log n) where n is the
+    Problem 16-2(b). Simulates the procedure of processing all the tasks. Running time is O(N log n) where n is the
     number of input tasks and N is the completion time of the whole procedure. Moreover, N <= R + nP, where R is the
     maximum release time of all the tasks and P is the maximum processing time.
     :param tasks: the input tasks.
