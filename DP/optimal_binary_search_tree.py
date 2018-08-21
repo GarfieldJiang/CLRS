@@ -6,7 +6,7 @@ def get_optimal_bst(p, q):
     """
     \Theta(n^3) method to calculate the expected cost of the optimal BST.
     :param p: key probabilities. p[i] refers to p_{i} in the text.
-    :param q: dummny node probabilities. q[i] refers to q{i} in the text.
+    :param q: dummy node probabilities. q[i] refers to q_{i} in the text.
     :return: the optimal cost and the root matrix for the optimal BST.
     """
 
@@ -72,10 +72,10 @@ def construct_bst(root):
 # ex 15.5-4
 def get_optimal_bst_fast(p, q):
     """
-    \Theta(n^2) method to calculate the expected cost of the optimal BST. Takes use of Knuth's conlusion that a root
+    \Theta(n^2) method to calculate the expected cost of the optimal BST. Takes use of Knuth's conclusion that a root
     matrix exists so that root[i][j-1] <= root[i][j] <= root[i+1][j] for all i < j.
     :param p: key probabilities. p[i] refers to p_{i} in the text.
-    :param q: dummny node probabilities. q[i] refers to q{i} in the text.
+    :param q: dummy node probabilities. q[i] refers to q_{i} in the text.
     :return: the optimal cost and the root matrix for the optimal BST.
     """
 
