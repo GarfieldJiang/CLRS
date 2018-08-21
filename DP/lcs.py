@@ -126,9 +126,30 @@ def __build_lmis(x, last_indices, last_index):
     return __build_lmis(x, last_indices, last_indices[last_index]) + [x[last_index]]
 
 
-# ex 15.4-6
+def __custom_binary_search(indices, x, beg, end, val):
+    if beg >= end:
+        return -1
+
+    original_end = end
+    while end - beg > 1:
+        mid = beg + (end - beg) // 2
+        if x[indices[mid]] == val:
+            return mid
+
+        if x[indices[mid]] > val:
+            end = mid
+        else:
+            beg = mid
+
+    return beg if x[indices[beg]] >= val else beg + 1 if beg + 1 < original_end else -1
+
+
 def get_lmis_quick(x):
-    # Improved from get_lmis_direct. Time complexity: O(n * \log n).
+    """
+    ex 15.4-6. https://en.wikipedia.org/wiki/Longest_increasing_subsequence. Time complexity: O(n * \log n).
+    :param x:
+    :return:
+    """
 
     assert x is not None
     n = len(x)
@@ -136,24 +157,37 @@ def get_lmis_quick(x):
     if n == 0:
         return ''
 
-    # min_last_elems[i] denotes the minimum last element of the MISes of length i + 1. It's obvious that min_last_elems
-    # is non-decreasing.
-    min_last_elems = [None] * n
-    min_last_elems[0] = x[0]
+    # min_last_elem_indices[i] denotes the minimum last element index of the MISes of length i + 1.
+    # It's obvious that min_last_elem_indices is increasing,
+    # but it's not necessarily the final result.
+    min_last_elem_indices = [-1] * n
+    min_last_elem_indices[0] = 0
+
+    # last_indices[i] is the predecessor index of the LMIS ending at x[i].
+    last_indices = [-1] * n
 
     lmis_len = 1
 
     for i in range(1, n):
-        if x[i] > min_last_elems[lmis_len - 1]:
+        if x[i] > x[min_last_elem_indices[lmis_len - 1]]:
             # x[i] is greater than the minimum last element of the LMISes of length lmis_len.
 
-            min_last_elems[lmis_len] = x[i]
+            min_last_elem_indices[lmis_len] = i
+            last_indices[i] = min_last_elem_indices[lmis_len - 1]
             lmis_len += 1
-        else:  # x[i] <= min_last_elems[lmis_len - 1]
-            j = common.binary_search_ge(min_last_elems, 0, lmis_len, x[i])
-            min_last_elems[j] = x[i]
+        else:  # x[i] <= min_last_elem_indices[lmis_len - 1]
+            j = __custom_binary_search(min_last_elem_indices, x, 0, lmis_len, x[i])
+            min_last_elem_indices[j] = i
+            last_indices[i] = min_last_elem_indices[j - 1]
 
-    return ''.join(min_last_elems[0:lmis_len])
+    ret = [None] * lmis_len
+    index = min_last_elem_indices[lmis_len - 1]
+    ret[lmis_len - 1] = x[index]
+    for i in range(lmis_len - 2, -1, -1):
+        index = last_indices[index]
+        ret[i] = x[index]
+
+    return ''.join(ret)
 
 
 def get_lcs_iter(x, y, c):
@@ -238,27 +272,35 @@ class TestLCS(unittest.TestCase):
         for case in TestLCS.__get_lmis_cases():
             self.assertEqual(len(case), 3)
             original = case[0]
-            non_strict_lmis = case[1]
-            strict_lmis = case[2]
+            non_strict_lmises = case[1]
+            strict_lmises = case[2]
             res_non_strict, res_strict = get_lmis_uselcs(original)
-            self.assertEqual(res_non_strict, non_strict_lmis)
-            self.assertEqual(res_strict, strict_lmis)
+            self.assertTrue(res_non_strict in non_strict_lmises,
+                            'Wrong result \'%s\' for input \'%s\'. Expecting one of %s'
+                            % (res_non_strict, original, non_strict_lmises))
+            self.assertTrue(res_strict in strict_lmises,
+                            'Wrong result \'%s\' for input \'%s\'. Expecting one of %s'
+                            % (res_strict, original, strict_lmises))
 
     def test_get_lmis_direct(self):
         for case in TestLCS.__get_lmis_cases():
             self.assertEqual(len(case), 3)
             original = case[0]
-            lmis = case[2]
+            lmises = case[2]
             res = get_lmis_direct(original)
-            self.assertEqual(res, lmis)
+            self.assertTrue(res in lmises,
+                            'Wrong result \'%s\' for input \'%s\'. Expecting one of %s'
+                            % (res, original, lmises))
 
     def test_get_lmis_quick(self):
         for case in TestLCS.__get_lmis_cases():
             self.assertEqual(len(case), 3)
             original = case[0]
-            lmis = case[2]
+            lmises = case[2]
             res = get_lmis_quick(original)
-            self.assertEqual(res, lmis)
+            self.assertTrue(res in lmises,
+                            'Wrong result \'%s\' for input \'%s\'. Expecting one of %s'
+                            % (res, original, lmises))
 
     @classmethod
     def __get_lcs_cases(cls):
@@ -274,8 +316,12 @@ class TestLCS(unittest.TestCase):
     def __get_lmis_cases(cls):
         # Order: a string followed by its non-strict and strict LMIS.
         return (
-            ('', '', ''),
-            ('1223', '1223', '123'),
-            ('5671234', '1234', '1234'),
-            ('9784560123', '0123', '0123'),
+            ('', ('',), ('',)),
+            ('123', ('123',), ('123',)),
+            ('1223', ('1223',), ('123',)),
+            ('9784560123', ('0123',), ('0123',)),
+            ('0918373225246', ('0122246',), ('01246', '01256', '01346', '01356')),
+            ('013425', ('01345',), ('01345',)),
+            ('01982376', ('01236', '01237'), ('01236', '01237')),
+            ('0011998822337766', ('0011223366', '0011223377'), ('01236', '01237')),
         )
