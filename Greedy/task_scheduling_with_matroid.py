@@ -47,7 +47,7 @@ def _check_independent(tasks, deadline_counts, indices, length):
         deadline_counts[task.deadline - 1] += 1
 
     cumulative_deadline_counts = 0
-    for i in range(0, length):
+    for i in range(0, len(tasks)):
         cumulative_deadline_counts += deadline_counts[i]
         if cumulative_deadline_counts > i + 1:
             return False

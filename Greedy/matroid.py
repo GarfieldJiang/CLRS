@@ -14,7 +14,7 @@ class WeightedEdge(object):
 
 def _check_connectivity(adj_matrix, vertex_a, vertex_b, vertex_count, edge_count_limit):
     """
-    A naive BFS implementation to check the connectivity between two vertices in a indirected graph. If the input graph
+    A naive BFS implementation to check the connectivity between two vertices in a undirected graph. If the input graph
     is G = (V, E), then the running time is O(|V| |E|).
     :param adj_matrix: the adjacent matrix of the input graph.
     :param vertex_a: input vertex index.
