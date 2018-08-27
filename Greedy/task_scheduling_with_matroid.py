@@ -28,19 +28,22 @@ def _check_input_or_error(tasks):
         assert task.deadline <= n
 
 
-def _check_independent(tasks, indices, length):
+def _check_independent(tasks, deadline_counts, indices, length):
     """
-    Ex 16.5-2. O(|A|) running time algorithm to check wether a set A of tasks are independent.
+    Ex 16.5-2. O(|A|) running time algorithm to check whether a set A of tasks are independent.
     :param tasks: all the tasks.
+    :param deadline_counts: a helper array, where deadline_counts[i] denotes how many tasks have deadlines no greater
+    than i + 1.
     :param indices: indices of tasks to consider. 
     :param length: indices[0:length] will be considered, which means that length = |A|.
     :return: whether the tasks considered are independent.
     """
-    deadline_counts = [0] * length
+
+    for i in range(0, len(tasks)):
+        deadline_counts[i] = 0
+
     for i in range(0, length):
         task = tasks[indices[i]]
-        if task.deadline - 1 >= length:
-            continue
         deadline_counts[task.deadline - 1] += 1
 
     cumulative_deadline_counts = 0
@@ -68,9 +71,10 @@ def schedule_task(tasks):
     schedule_on_sorted = [-1] * n
     early_count = 0
 
+    deadline_counts = [0] * n
     for i in range(0, n):
         schedule_on_sorted[early_count] = i
-        if _check_independent(tasks, schedule_on_sorted, early_count + 1):
+        if _check_independent(tasks, deadline_counts, schedule_on_sorted, early_count + 1):
             early_count += 1
 
     schedule = [-1] * early_count
