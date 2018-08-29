@@ -1,7 +1,7 @@
 import unittest
 from Common.sort_utilities import get_cases, check_is_sorted
 from Common.common import default_key
-from .heap import build_max_heap, max_heapify
+from HeapSort.heap import build_max_heap, max_heapify
 
 
 def heap_sort(array, key=None):
