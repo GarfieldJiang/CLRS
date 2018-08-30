@@ -1,30 +1,43 @@
 import unittest
-from Common.sort_utilities import get_cases, check_is_sorted
+from Common.sort_utilities import get_cases, check_sorting_result
 from Common.common import default_key
 from HeapSort.heap import build_max_heap, max_heapify
+from typing import List, TypeVar, Callable
 
 
-def heap_sort(array, key=None):
+T = TypeVar('T')
+K = TypeVar('K')
+
+
+def heap_sort(array: List[T], offset: int=0, length: int=None, key: Callable[[T], K]=None):
     """
-    Standard heap sort algorithm that works in place in O(n log n) time, where n = len(array).
+    Standard heap sort algorithm that works in place in O(n log n) time, where n = len(array) - offset.
     :param array: The input array (list).
+    :param offset: Where to start sorting.
+    :param length: Sorting length.
     :param key: The key getter.
     """
-    if not array:
-        return
+    assert array is not None
+    assert offset >= 0
+    heap_size = length if length is not None else (len(array) - offset)
+    assert len(array) >= heap_size >= 0
 
     key = key or default_key
-    heap_size = len(array)
 
-    build_max_heap(array, heap_size=heap_size, key=key)
+    build_max_heap(array, offset=offset, heap_size=heap_size, key=key)
     while heap_size > 1:
-        array[heap_size - 1], array[0] = array[0], array[heap_size - 1]
+        array[offset + heap_size - 1], array[offset] = array[offset], array[offset + heap_size - 1]
         heap_size -= 1
-        max_heapify(array, 0, heap_size=heap_size, key=key)
+        max_heapify(array, offset=offset, root_index=offset, heap_size=heap_size, key=key)
 
 
 class TestHeapSort(unittest.TestCase):
     def test_heap_sort(self):
         for case in get_cases():
-            heap_sort(case.array, case.key)
-            self.assertTrue(check_is_sorted(case.array, case.key), msg='Not sorted: %s' % case.desc)
+            before_sorting = list(case.array)
+            # print('Before: %r' % before_sorting)
+            heap_sort(case.array, offset=case.offset, length=case.length, key=case.key)
+            # print('After: %r' % case.array)
+            self.assertTrue(check_sorting_result(
+                before_sorting, case.array, offset=case.offset, length=case.length, key=case.key),
+                msg='Wrong result: %s' % case.desc)

@@ -67,7 +67,7 @@ def schedule_task(tasks):
     tasks = list(tasks)
     for i in range(0, n):
         tasks[i].index = i
-    heap_sort(tasks, lambda t: -t.penalty)
+    heap_sort(tasks, key=lambda t: -t.penalty)
     schedule_on_sorted = [-1] * n
     early_count = 0
 
@@ -80,7 +80,7 @@ def schedule_task(tasks):
     schedule = [-1] * early_count
     for i in range(0, early_count):
         schedule[i] = schedule_on_sorted[i]
-    heap_sort(schedule, lambda index: tasks[index].deadline)
+    heap_sort(schedule, key=lambda index: tasks[index].deadline)
     for i in range(0, early_count):
         schedule[i] = tasks[schedule[i]].index
 

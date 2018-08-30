@@ -2,37 +2,44 @@ import unittest
 import logging
 from collections import namedtuple
 from Common.common import default_key
+from typing import List, Callable, TypeVar
+
+
+T = TypeVar('T')
+K = TypeVar('K')
 
 
 logging.basicConfig(level=logging.DEBUG)
 
 
-def heap_left_child(i):
-    return 2 * i + 1
+def heap_left_child(i: int, offset: int=0):
+    return 2 * i + 1 - offset
 
 
-def heap_right_child(i):
-    return 2 * i + 2
+def heap_right_child(i: int, offset: int=0):
+    return 2 * i + 2 - offset
 
 
-def heap_parent(i):
-    return (i - 1) // 2
+def heap_parent(i: int, offset: int=0):
+    return (i - 1 + offset) // 2
 
 
-def max_heapify(array, root_index, heap_size=None, key=None):
+def max_heapify(array: List[T], offset: int, root_index: int, heap_size: int=None, key: Callable[[T], K]=None):
     """
     Ex 6.2-5. Iterative version of the Max-Heapify algorithm. O(log n) time, where n = heap_size <= len(array).
     :param array: The input array.
+    :param offset: Where the heap starts.
     :param root_index: The given index of the heap root.
-    :param heap_size: array[0 .. heap_size - 1] will be considered a heap.
+    :param heap_size: array[offset .. offset + heap_size - 1] will be considered a heap.
     :param key: function to get the sorting key.
     """
-    heap_size = heap_size if heap_size is not None else len(array)
-    assert heap_size <= len(array), 'Heap size cannot exceed array length'
+    assert offset >= 0
+    heap_size = heap_size if heap_size is not None else (len(array) - offset)
+    assert len(array) >= heap_size >= 0
     key = key or default_key
-    n = heap_size
+    n = offset + heap_size
     while True:
-        left = heap_left_child(root_index)
+        left = heap_left_child(root_index, offset)
         if left >= n:
             break
 
@@ -49,24 +56,26 @@ def max_heapify(array, root_index, heap_size=None, key=None):
         root_index = max_node
 
 
-def build_max_heap(array, heap_size=None, key=None):
+def build_max_heap(array: List[T], offset: int, heap_size: int=None, key: Callable[[T], K]=None):
     """
     The standard heap building algorithm that miraculously runs in O(n) time where n = len(array).
     :param array: The input array.
-    :param heap_size: array[0 .. heap_size - 1] will be considered a heap.
+    :param offset: Where the heap starts.
+    :param heap_size: array[offset .. offset + heap_size - 1] will be considered a heap.
     :param key: function to get the sorting key.
     """
     if not array:
         return
 
-    heap_size = heap_size or len(array)
-    assert heap_size <= len(array), 'Heap size cannot exceed array length'
+    assert offset >= 0
+    heap_size = heap_size or len(array) - offset
+    assert len(array) >= heap_size >= 0
     key = key or default_key
-    for i in range(heap_size // 2 - 1, -1, -1):
-        max_heapify(array, i, heap_size, key)
+    for i in range(offset + heap_size // 2 - 1, offset - 1, -1):
+        max_heapify(array, offset, i, heap_size, key)
 
 
-def heap_insert(array, new_elem, key=None):
+def heap_insert(array: List[T], new_elem: T, key: Callable[[T], K]=None):
     """
     Inserts a new element into the max heap in O(log n) time, Optimized by Ex 6.5-6
     :param array: The input array.
@@ -85,7 +94,7 @@ def heap_insert(array, new_elem, key=None):
     array[current] = new_elem
 
 
-def heap_delete(array, i, key=None):
+def heap_delete(array: List[T], i: int, key=None):
     """
     Ex 6.5-8 Delete elements at index i in a max heap in O(log n) time.
     :param array: The input array.
@@ -96,37 +105,40 @@ def heap_delete(array, i, key=None):
     deleted = array[i]
     array[i] = array[-1]
     del array[-1]
-    max_heapify(array, i, key=key)
+    max_heapify(array, 0, i, key=key)
     return deleted
 
 
-def check_max_heap(array, root_index, heap_size=None, key=None):
+def check_max_heap(array: List[T], offset: int, root_index: int, heap_size: int=None, key: Callable[[T], K]=None):
     """
     Utility method to check whether an array rooted at the given index is a max heap. O(n) time, where n = len(array).
     :param array: The input array.
+    :param offset: Where the heap starts.
     :param root_index: The given index of the heap root.
-    :param heap_size: array[0 .. heap_size - 1] will be considered a heap.
+    :param heap_size: array[offset .. offset + heap_size - 1] will be considered a heap.
     :param key: function to get the sorting key.
     """
 
     key = key or default_key
-    heap_size = heap_size or len(array)
-    n = heap_size
+    assert(offset >= 0)
+    heap_size = heap_size or len(array) - offset
+    assert(len(array) >= heap_size >= 0)
+    n = offset + heap_size
     if root_index >= n:
         return True
 
-    left = heap_left_child(root_index)
+    left = heap_left_child(root_index, offset)
     if left >= n:
         return True
 
-    if key(array[root_index]) < key(array[left]) or not check_max_heap(array, left, heap_size, key):
+    if key(array[root_index]) < key(array[left]) or not check_max_heap(array, offset, left, heap_size, key):
         return False
 
     right = left + 1
     if right >= n:
         return True
 
-    return key(array[root_index]) >= key(array[right]) and check_max_heap(array, right, heap_size, key)
+    return key(array[root_index]) >= key(array[right]) and check_max_heap(array, offset, right, heap_size, key)
 
 
 class TestHeap(unittest.TestCase):
@@ -153,7 +165,7 @@ class TestHeap(unittest.TestCase):
                        expected_res=True),
         )
         for case in cases:
-            self.assertEqual(check_max_heap(case.array, case.root_index), case.expected_res,
+            self.assertEqual(check_max_heap(case.array, 0, case.root_index), case.expected_res,
                              msg='Result is wrong: %s' % case.desc)
 
     def test_max_heapify(self):
@@ -162,12 +174,12 @@ class TestHeap(unittest.TestCase):
             case_class(desc='CLRS Example', array=[16, 4, 10, 14, 7, 9, 3, 2, 8, 1], root_index=1),
         )
         for case in cases:
-            self.assertTrue(check_max_heap(case.array, heap_left_child(case.root_index)),
+            self.assertTrue(check_max_heap(case.array, 0, heap_left_child(case.root_index)),
                             msg='Invalid input')
-            self.assertTrue(check_max_heap(case.array, heap_right_child(case.root_index)),
+            self.assertTrue(check_max_heap(case.array, 0, heap_right_child(case.root_index)),
                             msg='Invalid input')
-            max_heapify(case.array, case.root_index)
-            self.assertTrue(check_max_heap(case.array, case.root_index, len(case.array)),
+            max_heapify(case.array, 0, case.root_index)
+            self.assertTrue(check_max_heap(case.array, 0, case.root_index, len(case.array)),
                             msg='Heap is not max: %s' % case.desc)
 
     def test_build_max_heap(self):
@@ -181,8 +193,8 @@ class TestHeap(unittest.TestCase):
                        array=[need_key_item_class(key=999-i, value=i) for i in range(0, 1000)], key=lambda x: x.key)
         )
         for case in cases:
-            build_max_heap(case.array, key=case.key)
-            self.assertTrue(check_max_heap(case.array, 0, key=case.key),
+            build_max_heap(case.array, 0, key=case.key)
+            self.assertTrue(check_max_heap(case.array, 0, 0, key=case.key),
                             msg='Heap is not max: %s' % case.desc)
 
     def test_heap_delete(self):
@@ -199,10 +211,10 @@ class TestHeap(unittest.TestCase):
             len_array = len(case.array)
             for i in range(0, len_array):
                 array_copy = list(case.array)
-                build_max_heap(array_copy, key=case.key)
+                build_max_heap(array_copy, 0, key=case.key)
                 expected_deleted = array_copy[i]
                 deleted = heap_delete(array_copy, i, key=case.key)
                 self.assertEqual(deleted, expected_deleted,
                                  msg='Wrong deletion: %s != %s' % (deleted, expected_deleted))
-                self.assertTrue(check_max_heap(array_copy, 0, key=case.key),
+                self.assertTrue(check_max_heap(array_copy, 0, 0, key=case.key),
                                 msg='Heap is not max: %s' % case.desc)

@@ -20,7 +20,7 @@ class MaxPriorityQueue(object):
         if not init_array:
             return
 
-        build_max_heap(init_array, key=self._key)
+        build_max_heap(init_array, 0, key=self._key)
 
     def extract_max(self):
         """
@@ -36,7 +36,7 @@ class MaxPriorityQueue(object):
         heap_size = len(self._array) - 1
         self._array[0] = self._array[heap_size]
         del self._array[-1]
-        max_heapify(self._array, 0, heap_size, self._key)
+        max_heapify(self._array, 0, 0, heap_size, self._key)
         return max_elem
 
     def get_max(self):
@@ -115,7 +115,7 @@ class TestMaxPriorityQueue(TestCase):
         sorted_array = []
         while len(pq) > 0:
             sorted_array.append(pq.extract_max())
-        self.assertTrue(check_is_sorted(sorted_array, lambda x: -x))
+        self.assertTrue(check_is_sorted(sorted_array, key=lambda x: -x))
 
         pq.insert(2)
         pq.insert(3)
