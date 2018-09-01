@@ -75,5 +75,4 @@ def check_sorting_result(before_sorting, after_sorting, offset=0, length=None, k
     if dict_before != dict_after:
         return False;
 
-
     return True
