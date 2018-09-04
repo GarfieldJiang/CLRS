@@ -1,24 +1,30 @@
 import unittest
-from typing import List, Tuple
+from typing import List, Tuple, Callable, TypeVar
 from OrderStatistics.min_max import min_max
 from collections import namedtuple
+from Common.common import default_key
 
 
-def _cumulative_counts(array: List[int], _min: int, _max: int):
+T = TypeVar('T')
+
+
+def _cumulative_counts(array: List[T], _min: int, _max: int, key: Callable[[T], int]=None):
+    key = key or default_key
     counter_len = _max - _min + 1
     counters = [0] * counter_len
     for v in array:
-        counters[v - _min] += 1
+        counters[key(v) - _min] += 1
     for i in range(1, counter_len):
         counters[i] += counters[i - 1]
     return counters
 
 
-def counting_sort(array: List[int]):
+def counting_sort(array: List[T], key: Callable[[T], int]=None):
     """
     Counting sort. Running time is \Theta(n + k) and space is \Theta(k) where n = len(array) and k is the
     range of the input values.
     :param array: Input array.
+    :param key: Key getter.
     :return: Sorted version of the array.
     """
     assert array is not None
@@ -26,11 +32,14 @@ def counting_sort(array: List[int]):
     if n == 0:
         return []
     ret = [None] * n
-    _min, _max = min_max(array, 0, n)
-    counters = _cumulative_counts(array, _min, _max)
+    key = key or default_key
+    _min, _max = min_max(array, 0, n, key)
+    _min, _max = key(_min), key(_max)
+    counters = _cumulative_counts(array, _min, _max, key)
     for j in range(n - 1, -1, -1):
-        counters[array[j] - _min] -= 1
-        ret[counters[array[j] - _min]] = array[j]
+        k = key(array[j])
+        counters[k - _min] -= 1
+        ret[counters[k - _min]] = array[j]
     return ret
 
 
@@ -64,14 +73,15 @@ def query_count_in_range(array: List[int], queries: Tuple[(int, int)]):
 
 class TestCountingSort(unittest.TestCase):
     def test_counting_sort(self):
-        case_class = namedtuple('case_class', 'array sorted_array')
+        case_class = namedtuple('case_class', 'array sorted_array key')
         cases = (
-            case_class(array=[], sorted_array=[]),
-            case_class(array=[1], sorted_array=[1]),
-            case_class(array=[1, 3, 7, 5, 3, 5, 1, 1, 4], sorted_array=[1, 1, 1, 3, 3, 4, 5, 5, 7]),
+            case_class(array=[], sorted_array=[], key=None),
+            case_class(array=[1], sorted_array=[1], key=None),
+            case_class(array=[1, 3, 7, 5, 3, 5, 1, 1, 4], sorted_array=[1, 1, 1, 3, 3, 4, 5, 5, 7], key=None),
+            case_class(array=[1, 3, 7, 5, 3, 5, 1, 1, 4], sorted_array=[7, 5, 5, 4, 3, 3, 1, 1, 1], key=lambda x: -x),
         )
         for case in cases:
-            self.assertEqual(case.sorted_array, counting_sort(case.array))
+            self.assertEqual(case.sorted_array, counting_sort(case.array, key=case.key))
 
     def test_query_count_in_range(self):
         case_class = namedtuple('case_class', 'array queries expected_res')
