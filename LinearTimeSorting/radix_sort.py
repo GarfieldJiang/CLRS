@@ -9,51 +9,26 @@ from LinearTimeSorting.couting_sort import counting_sort
 T = TypeVar('T')
 
 
-class _DigitsView(object):
-    """
-    Simple class to maintain an array of digits of the given value (positive integer).
-    """
+def _get_digit_count(val: int, radix: int):
+    ret = 0
+    while val > 0:
+        val = val // radix
+        ret += 1
+    return ret
 
-    def __init__(self, val: int, radix: int, satellite_data):
-        assert radix > 1
-        assert val > 0
-        self._val = val
-        digits = []
-        while True:
-            digits.append(val % radix)
-            val //= radix
-            if val == 0:
-                break
-        self._digits = digits
-        self._satellite_data = satellite_data
 
-    def __repr__(self):
-        return str(self._val)
-
-    def __str__(self):
-        return str(self._val)
-
-    @property
-    def negative(self):
-        return self._negative
-
-    @property
-    def satellite_data(self):
-        return self._satellite_data
-
-    @property
-    def digit_count(self):
-        digits = self._digits
-        return 0 if not digits else len(digits)
-
-    def digit(self, index):
-        digits = self._digits
-        return 0 if not digits or index >= len(digits) else digits[index]
+def _get_digit_factors(digit_count: int, radix: int):
+    ret = [0] * (digit_count + 1)
+    factor = 1
+    for i in range(digit_count + 1):
+        ret[i] = factor
+        factor *= radix
+    return ret
 
 
 def radix_sort(array: List[T], radix: int, key: Callable[[T], int] = None):
     """
-    Naive implementation that deals with only positive integers.
+    Simple implementation of radix sort that deals with only positive integers.
     :param array: Input array.
     :param radix: Radix.
     :param key: Key getter.
@@ -65,19 +40,19 @@ def radix_sort(array: List[T], radix: int, key: Callable[[T], int] = None):
         return
     n = len(array)
     key = key or default_key
-    digits_views = [None] * n
     max_digit_count = 0
     for i in range(n):
-        digits_views[i] = _DigitsView(key(array[i]), radix, array[i])
-        digit_count = digits_views[i].digit_count
+        assert key(array[i]) > 0
+        digit_count = _get_digit_count(key(array[i]), radix)
         if digit_count > max_digit_count:
             max_digit_count = digit_count
-
+    factors = _get_digit_factors(max_digit_count, radix)
+    sorted_array = array
     for i in range(max_digit_count):
-        digits_views = counting_sort(digits_views, lambda dv: dv.digit(i))
-
+        digit_key: Callable[[T], int] = lambda v: key(v) % factors[i + 1] // factors[i]
+        sorted_array = counting_sort(sorted_array, digit_key)
     for i in range(n):
-        array[i] = digits_views[i].satellite_data
+        array[i] = sorted_array[i]
 
 
 class TestRadixSort(TestCase):
