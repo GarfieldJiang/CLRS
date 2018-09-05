@@ -1,3 +1,3 @@
 """
-See function `QuickSort.quick_sort.tail_recursion_quick_sort`.
+Problem 7-4(c) in quick_sort.py
 """
