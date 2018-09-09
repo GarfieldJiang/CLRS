@@ -15,9 +15,14 @@ def min_max(array: Sequence[T], offset: int=0, length: int=None, key: Callable[[
     assert length >= 0 and offset + length <= n
     key = key or default_key
 
-    my_min = None
-    my_max = None
-    i = offset
+    if length % 2 == 1:
+        my_min = my_max = array[offset]
+        i = offset + 1
+    else:
+        my_min, my_max = array[offset], array[offset + 1]
+        if key(my_min) > key(my_max):
+            my_min, my_max = my_max, my_min
+        i = offset + 2
     right = offset + length - 1
     while i < right:
         local_min = array[i]
@@ -29,12 +34,6 @@ def min_max(array: Sequence[T], offset: int=0, length: int=None, key: Callable[[
         if my_max is None or key(local_max) >= key(my_max):
             my_max = local_max
         i += 2
-
-    if i == right:
-        if my_min is None or key(array[i]) <= key(my_min):
-            my_min = array[i]
-        if my_max is None or key(array[i]) >= key(my_max):
-            my_max = array[i]
     return my_min, my_max
 
 
@@ -49,6 +48,7 @@ class TestMinMax(TestCase):
             case_class(array=(1, 5, 4, 2, 3), offset=1, length=3, min=2, max=5, key=None),
             case_class(array=(4, 4, 3, 3, 5, 5, 4), offset=0, length=7, min=3, max=5, key=None),
             case_class(array=(1, 5, 4, 2, 3), offset=0, length=5, key=lambda x: -x, min=5, max=1),
+            case_class(array=(4, 2, 3, 1, 1, 3), offset=0, length=6, key=lambda x: -x, min=4, max=1),
         )
         for case in cases:
             self.assertEqual(min_max(case.array, case.offset, case.length, case.key), (case.min, case.max))
