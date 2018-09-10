@@ -10,19 +10,25 @@ T = TypeVar('T')
 K = TypeVar('K')
 
 
-def _rand_select(array: List[T], lo: int, hi: int, i: int, key: Callable[[T], K]):
-    pivot_index = partition(array, lo, hi, key) if lo < hi else lo
-    if i == pivot_index:
-        return array[pivot_index]
-    if pivot_index < i:
-        return _rand_select(array, pivot_index + 1, hi, i, key)
-    return _rand_select(array, lo, pivot_index - 1, i, key)
+def _rand_select(array: List[T], i: int, key: Callable[[T], K]):
+    lo = 0
+    hi = len(array) - 1
+    while True:
+        if lo == hi:
+            return array[lo]
+        pivot_index = partition(array, lo, hi, key)
+        if i == pivot_index:
+            return array[pivot_index]
+        if pivot_index < i:
+            lo = pivot_index + 1
+        else:
+            hi = pivot_index - 1
 
 
 def select(array: List[T], i: int, key: Callable[[T], K]=None) -> T:
     """
-    Select the i'th smallest element in the sorted version of the given array. Runs in expected O(n) time, and will
-    modify the input.
+    Ex. 9.2-3. Select the i'th smallest element in the sorted version of the given array, iteratively.
+    Runs in expected O(n) time, and will modify the input.
     :param array: Input array.
     :param i: Element rank, starting from 0.
     :param key: Key getter.
@@ -32,7 +38,7 @@ def select(array: List[T], i: int, key: Callable[[T], K]=None) -> T:
     n = len(array)
     assert 0 <= i < n
     key = key or default_key
-    return _rand_select(array, 0, n - 1, i, key)
+    return _rand_select(array, i, key)
 
 
 class TestSelection(TestCase):
