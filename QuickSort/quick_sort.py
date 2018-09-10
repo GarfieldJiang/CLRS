@@ -11,7 +11,7 @@ K = TypeVar('K')
 _DEPTH_LIMIT = 32
 
 
-def _partition(array: List[T], i: int, j: int, key: Callable[[T], K]) -> int:
+def partition(array: List[T], i: int, j: int, key: Callable[[T], K]) -> int:
     assert(i < j)
     small = 0
     large = 0
@@ -41,7 +41,7 @@ def _quick_sort(array: List[T], i: int, j: int, key: Callable[[T], K], depth_lim
         return
 
     depth_limit -= 1
-    k = _partition(array, i, j, key)
+    k = partition(array, i, j, key)
     _quick_sort(array, i, k - 1, key, depth_limit)
     _quick_sort(array, k + 1, j, key, depth_limit)
 
@@ -57,7 +57,7 @@ def quick_sort(array: List[T], offset: int=0, length: int=None, key: Callable[[T
 
 def _tail_recursion_quick_sort(array: List[T], i: int, j: int, key: Callable[[T], K]):
     while i < j:
-        q = _partition(array, i, j, key)
+        q = partition(array, i, j, key)
         if 2 * q > i + j:
             i1 = q + 1
             j1 = j
