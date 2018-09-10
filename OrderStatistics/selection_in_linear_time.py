@@ -1,0 +1,136 @@
+from typing import TypeVar, List, Callable
+from Common.common import default_key, rand_permutate
+from QuickSort.quick_sort import partition
+from unittest import TestCase
+from collections import namedtuple
+from random import randint
+
+
+T = TypeVar('T')
+K = TypeVar('K')
+
+
+def _rand_select(array: List[T], i: int, key: Callable[[T], K]):
+    lo = 0
+    hi = len(array) - 1
+    while True:
+        if lo == hi:
+            return array[lo]
+        pivot_index = partition(array, lo, hi, key)
+        if i == pivot_index:
+            return array[pivot_index]
+        if pivot_index < i:
+            lo = pivot_index + 1
+        else:
+            hi = pivot_index - 1
+
+
+def rand_select(array: List[T], rank: int, key: Callable[[T], K]=None) -> T:
+    """
+    Ex. 9.2-3. Select the i'th smallest element (i = rank) in the sorted version of the given array, iteratively.
+    Runs in expected O(n) time, and will modify the input.
+    :param array: Input array.
+    :param rank: Element rank, starting from 0.
+    :param key: Key getter.
+    :return: The i'th smallest element.
+    """
+    assert array
+    n = len(array)
+    assert 0 <= rank < n
+    key = key or default_key
+    return _rand_select(array, rank, key)
+
+
+_COUNT_PER_GROUP = 5
+
+
+def _insertion_sort(array: List[T], lo: int, hi: int, key: Callable[[T], K]):
+    if lo >= hi:
+        return
+    for i in range(lo + 1, hi + 1):
+        for j in range(i - 1, lo - 1, -1):
+            if key(array[j]) <= key(array[j + 1]):
+                break
+            array[j], array[j + 1] = array[j + 1], array[j]
+
+
+def _partition_by_value(array: List[T], i: int, j: int, key: Callable[[T], K], val: T) -> int:
+    assert(i < j)
+    small = 0
+    large = 0
+
+    pivot = None
+    while small + large < j - i + 1:
+        cur = small + large + i
+        if key(array[cur]) <= key(val):
+            if pivot is None and key(array[cur]) == key(val):
+                pivot = small + i
+            array[cur], array[small + i] = array[small + i], array[cur]
+            small += 1
+        else:
+            large += 1
+
+    array[pivot], array[small + i - 1] = array[small + i - 1], array[pivot]
+    return small + i - 1
+
+
+def _select(array: List[T], lo: int, hi: int, rank: int, key: Callable[[T], K]) -> T:
+    if lo == hi:
+        return array[lo]
+
+    length = hi - lo + 1
+    group_count = length // 5 if length % 5 == 0 else length // 5 + 1
+    medians = [None] * group_count
+    for i in range(group_count):
+        sub_length = min(_COUNT_PER_GROUP, length - i * _COUNT_PER_GROUP)
+        _insertion_sort(array, lo + i * _COUNT_PER_GROUP, lo + i * _COUNT_PER_GROUP + sub_length - 1, key)  # O(1)
+        medians[i] = array[lo + i * _COUNT_PER_GROUP + (sub_length - 1) // 2]
+    median_of_medians = _select(medians, 0, group_count - 1, (group_count - 1) // 2, key)
+    pivot = _partition_by_value(array, lo, hi, key, median_of_medians)
+    if pivot == rank:
+        return array[rank]
+    if pivot < rank:
+        return _select(array, pivot + 1, hi, rank, key)
+    return _select(array, lo, pivot - 1, rank, key)
+
+
+def select(array: List[T], rank: int, key: Callable[[T], K]=None) -> T:
+    """
+    Section 9.3. Select the i'th smallest element (i = rank) in the sorted version of the given array.
+    Runs in worst-case O(n) time.
+    :param array: Input array.
+    :param rank: Element rank, starting from 0.
+    :param key: Key getter.
+    :return: The i'th smallest element.
+    """
+    assert array
+    n = len(array)
+    assert 0 <= rank < n
+    key = key or default_key
+    return _select(array, 0, n - 1, rank, key)
+
+
+class TestSelection(TestCase):
+    def test_selection(self):
+        case_class = namedtuple('case_class', 'array i key expected_res')
+        for select_method in (rand_select, select,):
+            cases = (
+                case_class(array=[1], i=0, key=None, expected_res=1),
+                case_class(array=[1, 3, 5, 4, 2, 7, 6], i=4, key=None, expected_res=5),
+                case_class(array=[1, 3, 5, 4, 2, 7, 6], i=2, key=None, expected_res=3),
+                case_class(array=[1, 3, 5, 4, 2, 7, 6], i=6, key=lambda x: -x, expected_res=1),
+                case_class(array=[16, 196, 64, 121, 144, 9, 36, 0, 49, 100, 4, 81, 169, 1, 25], i=4, key=None,
+                           expected_res=16)
+            )
+
+            for case in cases:
+                # print(case.array, case.i)
+                self.assertEqual(case.expected_res, select_method(case.array, case.i, case.key))
+
+            for length in range(1, 100):
+                i = randint(0, length - 1)
+                array = [x * x for x in range(0, length)]
+                rand_permutate(array)
+                case = case_class(array=array, i=i, key=None, expected_res=i * i)
+                # print(case.array, case.i)
+                self.assertEqual(case.expected_res, select_method(case.array, case.i, case.key))
