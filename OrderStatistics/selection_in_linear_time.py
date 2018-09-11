@@ -79,7 +79,7 @@ def _select(array: List[T], lo: int, hi: int, rank: int, key: Callable[[T], K]) 
         return array[lo]
 
     length = hi - lo + 1
-    group_count = length // 5 if length % 5 == 0 else length // 5 + 1
+    group_count = length // _COUNT_PER_GROUP if length % _COUNT_PER_GROUP == 0 else length // _COUNT_PER_GROUP + 1
     medians = [None] * group_count
     for i in range(group_count):
         sub_length = min(_COUNT_PER_GROUP, length - i * _COUNT_PER_GROUP)
