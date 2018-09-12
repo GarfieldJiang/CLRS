@@ -5,6 +5,7 @@ from unittest import TestCase
 from collections import namedtuple
 from random import randint
 
+_COUNT_PER_GROUP_IN_SELECTION = 5
 
 T = TypeVar('T')
 K = TypeVar('K')
@@ -39,9 +40,6 @@ def rand_select(array: List[T], rank: int, key: Callable[[T], K]=None) -> T:
     assert 0 <= rank < n
     key = key or default_key
     return _rand_select(array, rank, key)
-
-
-_COUNT_PER_GROUP = 5
 
 
 def _insertion_sort(array: List[T], lo: int, hi: int, key: Callable[[T], K]):
@@ -79,12 +77,14 @@ def _select(array: List[T], lo: int, hi: int, rank: int, key: Callable[[T], K]) 
         return array[lo]
 
     length = hi - lo + 1
-    group_count = length // _COUNT_PER_GROUP if length % _COUNT_PER_GROUP == 0 else length // _COUNT_PER_GROUP + 1
+    group_count = length // _COUNT_PER_GROUP_IN_SELECTION if length % _COUNT_PER_GROUP_IN_SELECTION == 0\
+        else length // _COUNT_PER_GROUP_IN_SELECTION + 1
     medians = [None] * group_count
     for i in range(group_count):
-        sub_length = min(_COUNT_PER_GROUP, length - i * _COUNT_PER_GROUP)
-        _insertion_sort(array, lo + i * _COUNT_PER_GROUP, lo + i * _COUNT_PER_GROUP + sub_length - 1, key)  # O(1)
-        medians[i] = array[lo + i * _COUNT_PER_GROUP + (sub_length - 1) // 2]
+        sub_length = min(_COUNT_PER_GROUP_IN_SELECTION, length - i * _COUNT_PER_GROUP_IN_SELECTION)
+        _insertion_sort(array, lo + i * _COUNT_PER_GROUP_IN_SELECTION,
+                        lo + i * _COUNT_PER_GROUP_IN_SELECTION + sub_length - 1, key)
+        medians[i] = array[lo + i * _COUNT_PER_GROUP_IN_SELECTION + (sub_length - 1) // 2]
     median_of_medians = _select(medians, 0, group_count - 1, (group_count - 1) // 2, key)
     pivot = _partition_by_value(array, lo, hi, key, median_of_medians)
     if pivot == rank:
@@ -108,6 +108,43 @@ def select(array: List[T], rank: int, key: Callable[[T], K]=None) -> T:
     assert 0 <= rank < n
     key = key or default_key
     return _select(array, 0, n - 1, rank, key)
+
+
+def _get_quantile_index(n, subset_count, i):
+    return round((i + 1) * n / subset_count) - 1
+
+
+def _calc_quantiles(array: List[T], lo: int, hi: int, subset_count: int, quantile_lo: int, quantile_hi: int,
+                    key: Callable[[T], K], quantiles: List[T]):
+    if quantile_lo > quantile_hi:
+        return
+    n = len(array)
+    quantile_mid = quantile_lo + (quantile_hi - quantile_lo) // 2
+    quantile_mid_pos = _get_quantile_index(n, subset_count, quantile_mid)
+    v = _select(array, lo, hi, quantile_mid_pos, key)
+    quantiles[quantile_mid] = v
+    if quantile_lo == quantile_hi:
+        return
+    _calc_quantiles(array, lo, quantile_mid_pos - 1, subset_count, quantile_lo, quantile_mid - 1, key, quantiles)
+    _calc_quantiles(array, quantile_mid_pos + 1, hi, subset_count, quantile_mid + 1, quantile_hi, key, quantiles)
+
+
+def calc_quantiles(array: List[T], subset_count: int, key: Callable[[T], K]=None) -> List[T]:
+    """
+    Ex 9.3-6.
+    :param array: Input array.
+    :param subset_count: How many subsets we want.
+    :param key: Key getter.
+    :return: The quantiles.
+    """
+    assert array
+    n = len(array)
+    assert n >= 1
+    assert 0 < subset_count <= n
+    key = key or default_key
+    ret: List[T] = [None] * subset_count
+    _calc_quantiles(array, 0, n - 1, subset_count, 0, subset_count - 1, key, ret)
+    return ret
 
 
 class TestSelection(TestCase):
@@ -134,3 +171,21 @@ class TestSelection(TestCase):
                 case = case_class(array=array, i=i, key=None, expected_res=i * i)
                 # print(case.array, case.i)
                 self.assertEqual(case.expected_res, select_method(case.array, case.i, case.key))
+
+    def test_quantiles(self):
+        case_class = namedtuple('case_class', 'array subset_count key expected_res')
+        cases = (
+            case_class(array=[100], subset_count=1, key=None, expected_res=[100]),
+            case_class(array=[1, 3, 5, 4, 2, 7, 6], subset_count=3, key=None, expected_res=[2, 5, 7]),
+            case_class(array=[1, 3, 5, 4, 2, 7, 6], subset_count=4, key=None, expected_res=[2, 4, 5, 7]),
+            case_class(array=[8, 2, 1, 3, 7, 5, 4, 6], subset_count=1, key=None, expected_res=[8]),
+            case_class(array=[8, 2, 1, 3, 7, 5, 4, 6], subset_count=2, key=None, expected_res=[4, 8]),
+            case_class(array=[8, 2, 1, 3, 7, 5, 4, 6], subset_count=3, key=None, expected_res=[3, 5, 8]),
+            case_class(array=[8, 2, 1, 3, 7, 5, 4, 6], subset_count=3, key=lambda x: -x, expected_res=[6, 4, 1]),
+            case_class(array=[8, 2, 1, 3, 7, 5, 4, 6], subset_count=4, key=None, expected_res=[2, 4, 6, 8]),
+        )
+
+        for case in cases:
+            # print(case.array, case.subset_count)
+            res = calc_quantiles(case.array, case.subset_count, case.key)
+            self.assertEqual(case.expected_res, res)
