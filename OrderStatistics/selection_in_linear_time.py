@@ -148,6 +148,40 @@ def calc_quantiles(array: List[T], subset_count: int, key: Callable[[T], K]=None
     return ret
 
 
+def calc_medians(array: List[T], k: int, key: Callable[[T], K]=None) -> List[T]:
+    """
+    Ex 9.3-7.
+    :param array: Input array.
+    :param k: How many medians to calculate.
+    :param key: Key getter.
+    :return: The k members which are closest to the median.
+    """
+    assert array
+    n = len(array)
+    key = key or default_key
+    assert 0 < k <= n
+    if k == n:
+        return list(array)
+    need_reduce_k = False
+    if k % 2 == 0:
+        need_reduce_k = True
+        k += 1
+    median_index = (n - 1) // 2
+    median = select(array, median_index, key)
+    lo_index = int(median_index - (k - 1) / 2)
+    hi_index = int(median_index + (k - 1) / 2)
+    lo = select(array, lo_index, key)
+    hi = lo
+    if hi_index > lo_index:
+        hi = _select(array, lo_index + 1, n - 1, hi_index, key)
+
+    if not need_reduce_k:
+        return array[lo_index:hi_index + 1]
+    if 2 * key(median) > key(hi) + key(lo):
+        return array[lo_index + 1:hi_index + 1]
+    return array[lo_index:hi_index]
+
+
 class TestSelection(TestCase):
     def test_selection(self):
         case_class = namedtuple('case_class', 'array i key expected_res')
@@ -208,3 +242,23 @@ class TestSelection(TestCase):
                 min_diff, max_diff = min_max(diffs)
                 self.assertTrue(max_diff - min_diff <= 2)
             self.assertEqual(array[length - 1], res[subset_count - 1])
+
+    def test_medians(self):
+        case_class = namedtuple('case_class', 'array key median_count expected_res')
+        cases = (
+            case_class(array=[3], key=None, median_count=1, expected_res=[3]),
+            case_class(array=[2, 4], key=None, median_count=1, expected_res=[2]),
+            case_class(array=[2, 4], key=None, median_count=2, expected_res=[2, 4]),
+            case_class(array=[1, 3, 7, 2, 5, 4, 6], key=lambda x: -x, median_count=3, expected_res=[3, 4, 5]),
+            case_class(array=[1, 3, 7, 2, 5, 4, 6], key=lambda x: -x, median_count=4, expected_res=[3, 4, 5, 6]),
+            case_class(array=[1, 3, 7, 2, 5, 4, 6], key=lambda x: -x, median_count=5, expected_res=[2, 3, 4, 5, 6]),
+            case_class(array=[1, 3, 7, 2, 5, 4, 6], key=lambda x: -x, median_count=6, expected_res=[2, 3, 4, 5, 6, 7]),
+            case_class(array=[1, 3, 7, 2, 5, 4, 6], key=lambda x: -x, median_count=7,
+                       expected_res=[1, 2, 3, 4, 5, 6, 7]),
+            case_class(array=[10, 8, 3, 2, 7, 5, 6, 4], key=None, median_count=4, expected_res=[3, 4, 5, 6]),
+        )
+
+        for case in cases:
+            res = calc_medians(case.array, case.median_count, case.key)
+            print(case.expected_res, res)
+            self.assertCountEqual(case.expected_res, res)
