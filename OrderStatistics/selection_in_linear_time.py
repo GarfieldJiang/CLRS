@@ -4,6 +4,8 @@ from QuickSort.quick_sort import partition
 from unittest import TestCase
 from collections import namedtuple
 from random import randint
+from math import ceil, floor
+from OrderStatistics.min_max import min_max
 
 _COUNT_PER_GROUP_IN_SELECTION = 5
 
@@ -178,6 +180,7 @@ class TestSelection(TestCase):
             case_class(array=[100], subset_count=1, key=None, expected_res=[100]),
             case_class(array=[1, 3, 5, 4, 2, 7, 6], subset_count=3, key=None, expected_res=[2, 5, 7]),
             case_class(array=[1, 3, 5, 4, 2, 7, 6], subset_count=4, key=None, expected_res=[2, 4, 5, 7]),
+            case_class(array=[1, 3, 5, 4, 2, 7, 6], subset_count=7, key=None, expected_res=[1, 2, 3, 4, 5, 6, 7]),
             case_class(array=[8, 2, 1, 3, 7, 5, 4, 6], subset_count=1, key=None, expected_res=[8]),
             case_class(array=[8, 2, 1, 3, 7, 5, 4, 6], subset_count=2, key=None, expected_res=[4, 8]),
             case_class(array=[8, 2, 1, 3, 7, 5, 4, 6], subset_count=3, key=None, expected_res=[3, 5, 8]),
@@ -189,3 +192,20 @@ class TestSelection(TestCase):
             # print(case.array, case.subset_count)
             res = calc_quantiles(case.array, case.subset_count, case.key)
             self.assertEqual(case.expected_res, res)
+
+        for length in range(1, 100):
+            subset_count = randint(1, length)
+            array = [x * 2 for x in range(0, length)]
+            rand_permutate(array)
+            # print(array, subset_count)
+            res = calc_quantiles(array, subset_count)
+            # print(res)
+            self.assertEqual(subset_count, len(res))
+            if subset_count > 1:
+                diffs = []
+                for i in range(0, subset_count - 1):
+                    self.assertEqual(0, res[i] % 2)
+                    diffs.append(res[i + 1] - res[i])
+                min_diff, max_diff = min_max(diffs)
+                self.assertTrue(max_diff - min_diff <= 2)
+            self.assertEqual(array[length - 1], res[subset_count - 1])
