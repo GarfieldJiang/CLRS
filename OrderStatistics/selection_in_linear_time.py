@@ -260,5 +260,5 @@ class TestSelection(TestCase):
 
         for case in cases:
             res = calc_medians(case.array, case.median_count, case.key)
-            print(case.expected_res, res)
+            # print(case.expected_res, res)
             self.assertCountEqual(case.expected_res, res)
