@@ -4,7 +4,6 @@ from QuickSort.quick_sort import partition
 from unittest import TestCase
 from collections import namedtuple
 from random import randint
-from math import ceil, floor
 from OrderStatistics.min_max import min_max
 
 _COUNT_PER_GROUP_IN_SELECTION = 5
