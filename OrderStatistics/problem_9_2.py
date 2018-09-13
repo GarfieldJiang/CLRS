@@ -1,11 +1,7 @@
 from .selection_in_linear_time import select_internal
-from collections import namedtuple
 from typing import TypeVar, List, Callable
-from Common.common import default_key, rand_permutate
 from unittest import TestCase
 from collections import namedtuple
-from random import randint
-from OrderStatistics.min_max import min_max
 
 T = TypeVar('T')
 K = TypeVar('K')
