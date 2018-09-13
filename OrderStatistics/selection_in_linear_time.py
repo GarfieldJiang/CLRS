@@ -73,7 +73,7 @@ def _partition_by_value(array: List[T], i: int, j: int, key: Callable[[T], K], v
     return small + i - 1
 
 
-def _select(array: List[T], lo: int, hi: int, rank: int, key: Callable[[T], K]) -> T:
+def select_internal(array: List[T], lo: int, hi: int, rank: int, key: Callable[[T], K]) -> T:
     if lo == hi:
         return array[lo]
 
@@ -86,13 +86,13 @@ def _select(array: List[T], lo: int, hi: int, rank: int, key: Callable[[T], K]) 
         _insertion_sort(array, lo + i * _COUNT_PER_GROUP_IN_SELECTION,
                         lo + i * _COUNT_PER_GROUP_IN_SELECTION + sub_length - 1, key)
         medians[i] = array[lo + i * _COUNT_PER_GROUP_IN_SELECTION + (sub_length - 1) // 2]
-    median_of_medians = _select(medians, 0, group_count - 1, (group_count - 1) // 2, key)
+    median_of_medians = select_internal(medians, 0, group_count - 1, (group_count - 1) // 2, key)
     pivot = _partition_by_value(array, lo, hi, key, median_of_medians)
     if pivot == rank:
         return array[rank]
     if pivot < rank:
-        return _select(array, pivot + 1, hi, rank, key)
-    return _select(array, lo, pivot - 1, rank, key)
+        return select_internal(array, pivot + 1, hi, rank, key)
+    return select_internal(array, lo, pivot - 1, rank, key)
 
 
 def select(array: List[T], rank: int, key: Callable[[T], K]=None) -> T:
@@ -108,7 +108,7 @@ def select(array: List[T], rank: int, key: Callable[[T], K]=None) -> T:
     n = len(array)
     assert 0 <= rank < n
     key = key or default_key
-    return _select(array, 0, n - 1, rank, key)
+    return select_internal(array, 0, n - 1, rank, key)
 
 
 def _get_quantile_index(n, subset_count, i):
@@ -122,7 +122,7 @@ def _calc_quantiles(array: List[T], lo: int, hi: int, subset_count: int, quantil
     n = len(array)
     quantile_mid = quantile_lo + (quantile_hi - quantile_lo) // 2
     quantile_mid_pos = _get_quantile_index(n, subset_count, quantile_mid)
-    v = _select(array, lo, hi, quantile_mid_pos, key)
+    v = select_internal(array, lo, hi, quantile_mid_pos, key)
     quantiles[quantile_mid] = v
     if quantile_lo == quantile_hi:
         return
@@ -173,7 +173,7 @@ def calc_medians(array: List[T], k: int, key: Callable[[T], K]=None) -> List[T]:
     lo = select(array, lo_index, key)
     hi = lo
     if hi_index > lo_index:
-        hi = _select(array, lo_index + 1, n - 1, hi_index, key)
+        hi = select_internal(array, lo_index + 1, n - 1, hi_index, key)
 
     if not need_reduce_k:
         return array[lo_index:hi_index + 1]
