@@ -6,6 +6,7 @@ from collections import namedtuple
 from random import randint
 from OrderStatistics.min_max import min_max
 
+
 _COUNT_PER_GROUP_IN_SELECTION = 5
 
 T = TypeVar('T')
@@ -183,30 +184,6 @@ def calc_medians(array: List[T], k: int, key: Callable[[T], K]=None) -> List[T]:
 
 
 class TestSelection(TestCase):
-    def test_selection(self):
-        case_class = namedtuple('case_class', 'array i key expected_res')
-        for select_method in (rand_select, select,):
-            cases = (
-                case_class(array=[1], i=0, key=None, expected_res=1),
-                case_class(array=[1, 3, 5, 4, 2, 7, 6], i=4, key=None, expected_res=5),
-                case_class(array=[1, 3, 5, 4, 2, 7, 6], i=2, key=None, expected_res=3),
-                case_class(array=[1, 3, 5, 4, 2, 7, 6], i=6, key=lambda x: -x, expected_res=1),
-                case_class(array=[16, 196, 64, 121, 144, 9, 36, 0, 49, 100, 4, 81, 169, 1, 25], i=4, key=None,
-                           expected_res=16)
-            )
-
-            for case in cases:
-                # print(case.array, case.i)
-                self.assertEqual(case.expected_res, select_method(case.array, case.i, case.key))
-
-            for length in range(1, 100):
-                i = randint(0, length - 1)
-                array = [x * x for x in range(0, length)]
-                rand_permutate(array)
-                case = case_class(array=array, i=i, key=None, expected_res=i * i)
-                # print(case.array, case.i)
-                self.assertEqual(case.expected_res, select_method(case.array, case.i, case.key))
-
     def test_quantiles(self):
         case_class = namedtuple('case_class', 'array subset_count key expected_res')
         cases = (
