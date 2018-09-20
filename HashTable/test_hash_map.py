@@ -5,10 +5,14 @@ from .open_addressing import HashMap as HashMapOpenAddressing
 from random import randint
 
 
-class TestOpenAddressing(TestCase):
+def _second_hash(k, capacity_antilog):
+    return ((2654435769 * k) % 4294967296) >> (32 - capacity_antilog)
+
+
+class TestHashMap(TestCase):
     def test_basic_use(self):
-        for hash_map in (HashMapChaining(), HashMapOpenAddressing(),):
-            print(type(hash_map))
+        for hash_map in (HashMapChaining(), HashMapOpenAddressing(_second_hash),):
+            # print(type(hash_map))
             hash_map[1] = 3
             hash_map[2] = 4
             hash_map[10] = 5
@@ -46,10 +50,11 @@ class TestOpenAddressing(TestCase):
             self.assertEqual(1 << (DEFAULT_CAPACITY_ANTILOG + 3), hash_map.capacity)
 
     def test_random_ops(self):
-        for hash_map in (HashMapChaining(), HashMapOpenAddressing(),):
-            print(type(hash_map))
-            my_dict = {}
-            for i in range(0, 100):
+        self.maxDiff = 4096
+        for hash_map in (HashMapChaining(), HashMapOpenAddressing(_second_hash),):
+            # print(type(hash_map))
+            my_dict = dict()
+            for i in range(0, 400):
                 op = randint(0, 2)  # 0: del, not 0: set item
                 if len(my_dict) == 0:
                     op = 1
@@ -57,13 +62,15 @@ class TestOpenAddressing(TestCase):
                 if op == 0:
                     keys = list(my_dict.keys())
                     k = keys[randint(0, len(keys) - 1)]
-                    print('delete k=%d' % k)
+                    # print('my_dict.pop(%r)' % k)
+                    # print('hash_map.pop(%r)' % k)
                     my_dict.pop(k)
                     hash_map.pop(k)
                 else:
-                    k = randint(1, 10000)
+                    k = randint(1, 400)
                     v = randint(1, 100)
-                    print('insert k=%d, v=%d' % (k, v))
+                    # print('my_dict[%r] = %r' % (k, v))
+                    # print('hash_map[%r] = %r' % (k, v))
                     my_dict[k] = v
                     hash_map[k] = v
 
@@ -71,4 +78,4 @@ class TestOpenAddressing(TestCase):
                 self.assertSetEqual(set(my_dict.keys()), set(hash_map.keys()))
                 self.assertSetEqual(set(my_dict.values()), set(hash_map.values()))
                 self.assertEqual(len(my_dict), len(hash_map))
-                print(my_dict)
+                # print(my_dict)

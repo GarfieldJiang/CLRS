@@ -8,16 +8,22 @@ class _HashMapBucketNode(object):
         self.deleted = False
         self.in_use = False
 
+    def __repr__(self):
+        return '{k=%r, v=%r, deleted=%r, in_use=%r}' % (self.key, self.val, self.deleted, self.in_use)
+
+    def __str__(self):
+        return repr(self)
+
 
 class HashMap(object):
     """Ex. 11.4-2. Simple hash dictionary implementation using open addressing to resolve conflicts."""
 
-    _MAGIC_HASH_NUMBER = 2654435769
-
-    def __init__(self):
+    def __init__(self, secondary_hash_func):
         self._capacity_antilog = DEFAULT_CAPACITY_ANTILOG
         self._buckets = [_HashMapBucketNode() for _ in range(1 << self._capacity_antilog)]
         self._len = 0
+        assert secondary_hash_func
+        self._secondary_hash_func = secondary_hash_func
 
     def __len__(self):
         return self._len
@@ -90,6 +96,7 @@ class HashMap(object):
             if not bucket.in_use or bucket.deleted:
                 self._set_bucket(bucket_index, k, v)
                 break
+            i += 1
 
     def _set_bucket(self, bucket_index, k, v):
         bucket = self._buckets[bucket_index]
@@ -121,6 +128,10 @@ class HashMap(object):
     def capacity(self):
         return 1 << self._capacity_antilog
 
+    @property
+    def capacity_antilog(self):
+        return self._capacity_antilog
+
     def pop(self, k):
         i = 0
         while True:
@@ -147,16 +158,8 @@ class HashMap(object):
             if bucket.in_use and not bucket.deleted:
                 yield bucket.val
 
-    def _secondary_hash(self, k):
-        """
-        First use multiplication method to get a hash value H, then return 2 * H + 1 to make it odd.
-        :param k:
-        :return:
-        """
-        return ((HashMap._MAGIC_HASH_NUMBER * id(k) % (1 << 32)) >> self._capacity_antilog) * 2 + 1
-
     def _get_bucket_index(self, k, i):
-        return (hash(k) + i * self._secondary_hash(k)) % len(self._buckets)
+        return (hash(k) + i * (2 * self._secondary_hash_func(k, self._capacity_antilog) + 1)) % len(self._buckets)
 
     def _table_doubling(self):
         old_buckets = self._buckets
