@@ -16,7 +16,7 @@ class _HashMapBucketNode(object):
 
 
 class HashMap(object):
-    """Ex. 11.4-2. Simple hash dictionary implementation using open addressing to resolve conflicts."""
+    """Ex. 11.4-2. Simple hash dictionary implementation using open addressing to resolve collisions."""
 
     def __init__(self, secondary_hash_func):
         self._capacity_antilog = DEFAULT_CAPACITY_ANTILOG
