@@ -9,7 +9,7 @@ class _HashMapBucketNode(object):
 
 
 class HashMap(object):
-    """Simple hash dictionary implementation using chaining to resolve conflicts."""
+    """Simple hash dictionary implementation using chaining to resolve collisions."""
 
     def __init__(self):
         self._buckets = [None] * (1 << DEFAULT_CAPACITY_ANTILOG)
