@@ -1,5 +1,6 @@
 from Common.tree import BinaryTreeNode
 from Common.common import default_key
+from unittest import TestCase
 
 
 class _BinaryTreeNode(BinaryTreeNode):
@@ -9,37 +10,36 @@ class _BinaryTreeNode(BinaryTreeNode):
 
 
 class BST(object):
-    def __init__(self, key):
+    def __init__(self, key=None):
         self._root = None
         self._key = key or default_key
+
+    def root_value(self):
+        if not self._root:
+            raise ValueError('Empty tree.')
+        return self._root.value
 
     @staticmethod
     def _min(root):
         if not root:
             raise ValueError('Empty tree.')
-        ret = root.value
-        root = root.left
-        while root:
-            ret = root.value
+        while root.left:
             root = root.left
-        return ret
+        return root
 
     @staticmethod
     def _max(root):
         if not root:
             raise ValueError('Empty tree.')
-        ret = root.value
-        root = root.right
-        while root:
-            ret = root.value
+        while root.right:
             root = root.right
-        return ret
+        return root
 
     def min(self):
-        return BST._min(self._root)
+        return BST._min(self._root).value
 
     def max(self):
-        return BST._max(self._root)
+        return BST._max(self._root).value
 
     def insert(self, val):
         if val is None:
@@ -72,16 +72,16 @@ class BST(object):
         elif not node.right:
             self._transplant(node, node.left)
         else:
-            min_node = BST._min(node)
-            r = node.right
-            l = node.left
-            if r != min_node:
+            min_node = BST._min(node.right)
+            right = node.right
+            left = node.left
+            if right != min_node:
                 self._transplant(min_node, min_node.right)
-                min_node.right = r
-                r.parent = min_node
+                min_node.right = right
+                right.parent = min_node
             self._transplant(node, min_node)
-            min_node.left = l
-            l.parent = min_node
+            min_node.left = left
+            left.parent = min_node
 
     def _search(self, val):
         node = self._root
@@ -95,6 +95,42 @@ class BST(object):
                 node = node.left
             else:
                 node = node.right
+        return None
+
+    def values(self):
+        if not self._root:
+            return
+        node = BST._min(self._root)
+        while node:
+            yield(node.value)
+            node = BST._next(node)
+
+    def values_reversed(self):
+        if not self._root:
+            return
+        node = BST._max(self._root)
+        while node:
+            yield(node.value)
+            node = BST._prev(node)
+
+    @staticmethod
+    def _next(node):
+        if node.right:
+            return BST._min(node.right)
+        while node:
+            if node.parent and node == node.parent.left:
+                return node.parent
+            node = node.parent
+        return None
+
+    @staticmethod
+    def _prev(node):
+        if node.left:
+            return BST._max(node.left)
+        while node:
+            if node.parent and node == node.parent.right:
+                return node.parent
+            node = node.parent
         return None
 
     def __contains__(self, val):
@@ -118,3 +154,46 @@ class BST(object):
             up.right = v
         if v:
             v.parent = up
+
+
+class TestBST(TestCase):
+    def test_basic(self):
+        bst = BST()
+        bst.insert(12)
+        bst.insert(5)
+        bst.insert(2)
+        bst.insert(9)
+        bst.insert(18)
+        bst.insert(15)
+        bst.insert(19)
+        bst.insert(17)
+        self.assertListEqual(list(bst.values()), [2, 5, 9, 12, 15, 17, 18, 19])
+        bst.insert(13)
+        self.assertListEqual(list(bst.values()), [2, 5, 9, 12, 13, 15, 17, 18, 19])
+        self.assertListEqual(list(bst.values_reversed()), [19, 18, 17, 15, 13, 12, 9, 5, 2])
+        self.assertEqual(2, bst.min())
+        self.assertEqual(19, bst.max())
+        self.assertTrue(5 in bst)
+        self.assertTrue(18 in bst)
+        self.assertTrue(19 in bst)
+        self.assertFalse(20 in bst)
+        self.assertRaises(ValueError, lambda: bst.pop(20))
+        bst.pop(9)
+        self.assertListEqual(list(bst.values_reversed()), [19, 18, 17, 15, 13, 12, 5, 2])
+        self.assertFalse(9 in bst)
+        bst.pop(5)
+        self.assertListEqual(list(bst.values()), [2, 12, 13, 15, 17, 18, 19])
+        self.assertEqual(12, bst.root_value())
+        bst.pop(12)
+        self.assertListEqual(list(bst.values()), [2, 13, 15, 17, 18, 19])
+        self.assertEqual(13, bst.root_value())
+        bst.pop(15)
+        bst.pop(17)
+        self.assertListEqual(list(bst.values()), [2, 13, 18, 19])
+        bst.pop(18)
+        self.assertListEqual(list(bst.values()), [2, 13, 19])
+        bst.pop(13)
+        self.assertEqual(19, bst.root_value())
+        bst.pop(2)
+        bst.pop(19)
+        self.assertRaises(ValueError, lambda: bst.root_value())
