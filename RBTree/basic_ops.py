@@ -1,6 +1,7 @@
 from Common.tree import BinaryTreeNode
 from Common.common import default_key, rand_permutate
 from unittest import TestCase
+from RBTree.rotation import bst_left_rotate, bst_right_rotate
 
 
 _BLACK = True
@@ -18,40 +19,6 @@ class RBTree(object):
         self.nil = RBTreeNode(None, _BLACK)
         self.key = key or default_key
         self.root = self.nil
-
-
-def bst_left_rotate(bst, node: BinaryTreeNode):
-    r = node.right
-    p = node.parent
-    r.parent = p
-    if p:
-        if node == p.left:
-            p.left = r
-        else:
-            p.right = r
-    node.parent = r
-    node.right = r.left
-    node.right.parent = node
-    r.left = node
-    if node == bst.root:
-        bst.root = r
-
-
-def bst_right_rotate(bst, node: BinaryTreeNode):
-    l = node.left
-    p = node.parent
-    l.parent = p
-    if p:
-        if node == p.left:
-            p.left = l
-        else:
-            p.right = l
-    node.parent = l
-    node.left = l.right
-    node.left.parent = node
-    l.right = node
-    if node == bst.root:
-        bst.root = l
 
 
 def rb_min(rbt: RBTree, root: RBTreeNode):
@@ -251,7 +218,8 @@ class TestRBTreeBasicOps(TestCase):
         rbt = RBTree()
         insertion_seq = (41, 38, 31, 12, 19, 8)
         for i in insertion_seq:
-            rb_insert(rbt, i)
+            self.assertTrue(rb_insert(rbt, i))
+            self.assertFalse(rb_insert(rbt, i))
             rb_assert_properties(rbt)
         self.assertSequenceEqual(sorted(insertion_seq), list(rb_iter(rbt)))
 
