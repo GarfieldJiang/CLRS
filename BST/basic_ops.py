@@ -48,8 +48,6 @@ def bst_predecessor(node):
 def bst_search(bst, k):
     node = bst.root
     key = bst.key
-    if not node:
-        return None
     while node:
         if k == key(node.data):
             return node
