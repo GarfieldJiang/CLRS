@@ -99,13 +99,13 @@ def rb_iter(rbt: RBTree):
         node = rb_successor(rbt, node)
 
 
-def bst_iter_reversed(rbt: RBTree):
+def rb_iter_reversed(rbt: RBTree):
     if rbt.root == rbt.nil:
         return
     node = rb_max(rbt, rbt.root)
     while node != rbt.nil:
         yield(node.data)
-        node = rb_predecessor(node)
+        node = rb_predecessor(rbt, node)
 
 
 def rb_search(rbt: RBTree, k):
