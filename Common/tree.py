@@ -2,10 +2,11 @@ from unittest import TestCase
 
 
 class GenericTreeNode(object):
-    def __init__(self, child_capacity):
+    def __init__(self, child_capacity, data):
         assert isinstance(child_capacity, int) and child_capacity > 0
         self._children = [None for _ in range(0, child_capacity)]
         self._parent = None
+        self.data = data
 
     @property
     def parent(self):
@@ -28,8 +29,8 @@ class GenericTreeNode(object):
 
 
 class BinaryTreeNode(GenericTreeNode):
-    def __init__(self):
-        super(BinaryTreeNode, self).__init__(2)
+    def __init__(self, data):
+        super().__init__(2, data)
 
     @property
     def left(self):
@@ -51,8 +52,8 @@ class BinaryTreeNode(GenericTreeNode):
 
 
 class TernaryTreeNode(GenericTreeNode):
-    def __init__(self):
-        super(TernaryTreeNode, self).__init__(3)
+    def __init__(self, data):
+        super().__init__(3, data)
 
     @property
     def left(self):
@@ -92,24 +93,15 @@ def pre_order_traverse_tree(root, visit):
 
 
 class TestTree(TestCase):
-    class TernaryTreeNodeWithValue(TernaryTreeNode):
-        def __init__(self, value):
-            super(TestTree.TernaryTreeNodeWithValue, self).__init__()
-            self._value = value
-
-        @property
-        def value(self):
-            return self._value
-
     def test_pre_order_traverse_ternary_tree(self):
-        root = self.TernaryTreeNodeWithValue(1)
+        root = TernaryTreeNode(1)
 
-        left = self.TernaryTreeNodeWithValue(2)
+        left = TernaryTreeNode(2)
         root.left = left
         left.parent = root
-        node_3 = self.TernaryTreeNodeWithValue(3)
-        node_4 = self.TernaryTreeNodeWithValue(4)
-        node_5 = self.TernaryTreeNodeWithValue(5)
+        node_3 = TernaryTreeNode(3)
+        node_4 = TernaryTreeNode(4)
+        node_5 = TernaryTreeNode(5)
         left.left = node_3
         node_3.parent = left
         left.middle = node_4
@@ -117,11 +109,11 @@ class TestTree(TestCase):
         left.right = node_5
         node_5.parent = left
 
-        right = self.TernaryTreeNodeWithValue(6)
+        right = TernaryTreeNode(6)
         root.right = right
         right.parent = root
-        node_7 = self.TernaryTreeNodeWithValue(7)
-        node_8 = self.TernaryTreeNodeWithValue(8)
+        node_7 = TernaryTreeNode(7)
+        node_8 = TernaryTreeNode(8)
         right.left = node_7
         node_7.parent = right
         right.middle = node_8
@@ -130,7 +122,7 @@ class TestTree(TestCase):
         result = []
 
         def visit(node):
-            result.append(node.value)
+            result.append(node.data)
 
         pre_order_traverse_tree(root, visit)
         self.assertEqual(result, [1, 2, 3, 4, 5, 6, 7, 8])

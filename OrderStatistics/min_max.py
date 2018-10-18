@@ -3,9 +3,17 @@ from unittest import TestCase
 from collections import namedtuple
 from Common.common import default_key, rand_permutate
 from Common.tree import BinaryTreeNode
+from typing import List
 
 T = TypeVar('T')
 K = TypeVar('K')
+
+
+class _BinaryTreeNode(BinaryTreeNode):
+    def __init__(self):
+        super().__init__(None)
+        self.min_index = None
+        self.max_index = None
 
 
 def min_max(array: Sequence[T], offset: int=0, length: int=None, key: Callable[[T], K]=None):
@@ -62,17 +70,17 @@ def two_smallest(array: Sequence[T], offset: int=0, length: int=None, key: Calla
     assert length >= 2
     assert offset + length <= n
     key = key or default_key
-    tree_nodes = [None] * (length // 2 if length % 2 == 0 else (length + 1) // 2)
+    tree_nodes: List[_BinaryTreeNode] = [None] * (length // 2 if length % 2 == 0 else (length + 1) // 2)
     i = 0
     while i + 1 < length:
-        node = tree_nodes[i // 2] = BinaryTreeNode()
+        node = tree_nodes[i // 2] = _BinaryTreeNode()
         node.min_index = offset + i
         node.max_index = offset + i + 1
         if key(array[node.min_index]) > key(array[node.max_index]):  # Comparison
             node.min_index, node.max_index = node.max_index, node.min_index
         i += 2
     if i == length - 1:
-        node = tree_nodes[len(tree_nodes) - 1] = BinaryTreeNode()
+        node = tree_nodes[len(tree_nodes) - 1] = _BinaryTreeNode()
         node.min_index = node.max_index = offset + i
     tree_node_count = len(tree_nodes)
 
@@ -80,7 +88,7 @@ def two_smallest(array: Sequence[T], offset: int=0, length: int=None, key: Calla
         i = 0
         new_tree_node_count = 0
         while i + 1 < tree_node_count:
-            node = BinaryTreeNode()
+            node = _BinaryTreeNode()
             left_min_index = tree_nodes[i].min_index
             right_min_index = tree_nodes[i + 1].min_index
             left_is_smaller = key(array[left_min_index]) <= key(array[right_min_index])  # Comparison

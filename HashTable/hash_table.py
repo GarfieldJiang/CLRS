@@ -1,4 +1,5 @@
 from .hash_table_common import DEFAULT_CAPACITY_ANTILOG
+from Common.map import Map
 
 
 class _HashMapBucketNode(object):
@@ -8,7 +9,7 @@ class _HashMapBucketNode(object):
         self.next = None
 
 
-class HashMap(object):
+class HashMap(Map):
     """Simple hash dictionary implementation using chaining to resolve collisions."""
 
     def __init__(self):

@@ -1,4 +1,5 @@
 from .hash_table_common import DEFAULT_CAPACITY_ANTILOG
+from Common.map import Map
 
 
 class _HashMapBucketNode(object):
@@ -15,7 +16,7 @@ class _HashMapBucketNode(object):
         return repr(self)
 
 
-class HashMap(object):
+class HashMap(Map):
     """Ex. 11.4-2. Simple hash dictionary implementation using open addressing to resolve collisions."""
 
     def __init__(self, secondary_hash_func):

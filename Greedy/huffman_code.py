@@ -10,7 +10,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 class BinaryCodeTreeNode(BinaryTreeNode):
     def __init__(self, symbol, freq):
-        super(BinaryCodeTreeNode, self).__init__()
+        super().__init__(None)
         self._symbol = symbol
         assert freq >= 0
         self._freq = freq

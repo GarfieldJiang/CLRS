@@ -48,44 +48,38 @@ def traverse_binary_tree_in_place(root: BinaryTreeNode, visit):
             node = parent
 
 
-class BinaryTreeNodeWithValue(BinaryTreeNode):
-    def __init__(self, value):
-        super(BinaryTreeNodeWithValue, self).__init__()
-        self.value = value
-
-
 class TestRootedTree(TestCase):
     def test_traverse_binary_tree_with_stack(self):
-        root = BinaryTreeNodeWithValue(1)
-        left = root.left = BinaryTreeNodeWithValue(2)
-        right = root.right = BinaryTreeNodeWithValue(3)
-        left.right = BinaryTreeNodeWithValue(4)
-        right.left = BinaryTreeNodeWithValue(5)
-        right.right = BinaryTreeNodeWithValue(6)
-        right.left.right = BinaryTreeNodeWithValue(7)
-        right.left.right.left = BinaryTreeNodeWithValue(8)
+        root = BinaryTreeNode(1)
+        left = root.left = BinaryTreeNode(2)
+        right = root.right = BinaryTreeNode(3)
+        left.right = BinaryTreeNode(4)
+        right.left = BinaryTreeNode(5)
+        right.right = BinaryTreeNode(6)
+        right.left.right = BinaryTreeNode(7)
+        right.left.right.left = BinaryTreeNode(8)
 
         array = []
-        traverse_binary_tree_with_stack(root, lambda node: array.append(node.value))
+        traverse_binary_tree_with_stack(root, lambda node: array.append(node.data))
         self.assertEqual([1, 2, 4, 3, 5, 7, 8, 6], array)
 
     def test_traverse_binary_tree_in_place(self):
-        root = BinaryTreeNodeWithValue(1)
-        left = root.left = BinaryTreeNodeWithValue(2)
+        root = BinaryTreeNode(1)
+        left = root.left = BinaryTreeNode(2)
         left.parent = root
-        right = root.right = BinaryTreeNodeWithValue(3)
+        right = root.right = BinaryTreeNode(3)
         right.parent = root
-        left.right = BinaryTreeNodeWithValue(4)
+        left.right = BinaryTreeNode(4)
         left.right.parent = left
-        right.left = BinaryTreeNodeWithValue(5)
+        right.left = BinaryTreeNode(5)
         right.left.parent = right
-        right.right = BinaryTreeNodeWithValue(6)
+        right.right = BinaryTreeNode(6)
         right.right.parent = right
-        right.left.right = BinaryTreeNodeWithValue(7)
+        right.left.right = BinaryTreeNode(7)
         right.left.right.parent = right.left
-        right.left.right.left = BinaryTreeNodeWithValue(8)
+        right.left.right.left = BinaryTreeNode(8)
         right.left.right.left.parent = right.left.right
 
         array = []
-        traverse_binary_tree_in_place(root, lambda node: array.append(node.value))
+        traverse_binary_tree_in_place(root, lambda node: array.append(node.data))
         self.assertEqual([1, 2, 4, 3, 5, 7, 8, 6], array)
