@@ -88,7 +88,7 @@ def rb_search(rbt: RBTree, k):
     return rbt.nil
 
 
-def _rb_insert_fixup(rbt: RBTree, node: RBTreeNode):
+def rb_insert_fixup(rbt: RBTree, node: RBTreeNode):
     # If the newly added node becomes the root, then its parent is nil (and therefore black).
     while node.parent.black_or_red == _RED:  # Red node has a red parent, so needs fixing.
         # Grandparent exists since parent is red. And of course grand parent is black.
@@ -180,17 +180,78 @@ def rb_insert(rbt: RBTree, data, allow_dup_key=False) -> bool:
         p.right = new_node
     new_node.parent = p
 
-    _rb_insert_fixup(rbt, new_node)
+    rb_insert_fixup(rbt, new_node)
     return True
 
 
+def rb_transplant(rbt: RBTree, u: RBTreeNode, v: RBTreeNode):
+    """
+    The red-black tree version of transplant operation. Replacing the subtree rooted at u with that rooted at v.
+    When v == rbt.nil, its parent will also be set to u.parent.
+    :param rbt:
+    :param u:
+    :param v: Can be rbt.nil.
+    :return:
+    """
+    if u == rbt.root:
+        rbt.root = v
+    elif u == u.parent.left:
+        u.parent.left = v
+    else:
+        u.parent.right = v
+
+    # Even if v is rbt.nil, its parent will also be set. The function _rb_pop_fixup will utilize this.
+    v.parent = u.parent
+
+
+def rb_pop_fixup(rbt: RBTree, node: RBTreeNode):
+    pass
+
+
+def rb_pop(rbt: RBTree, node: RBTreeNode):
+    """
+    Pop (delete) a node from a red-black tree.
+    :param rbt:
+    :param node:
+    :return:
+    """
+    color_for_check = node.black_or_red
+    if node.left == rbt.nil:
+        fix_from = node.right
+        rb_transplant(rbt, node, node.right)
+    elif node.right == rbt.nil:
+        fix_from = node.left
+        rb_transplant(rbt, node, node.left)
+    else:
+        y = rb_min(rbt, node.right)
+        fix_from = y.right  # Can be rbt.nil
+        if y.parent == node:
+            fix_from.parent = y
+        else:
+            rb_transplant(rbt, y, y.right)
+            y.right = node.right
+            y.right.parent = y
+        rb_transplant(rbt, node, y)
+        y.black_or_red = node.black_or_red
+        y.left = node.left
+        y.left.parent = y
+    if color_for_check == _BLACK:
+        rb_pop_fixup(rbt, fix_from)
+
+
 def rb_black_height(rbt: RBTree, node: RBTreeNode):
+    """
+    Check and return the black height of a node in a red-black tree.
+    :param rbt:
+    :param node:
+    :return: The black height of node.
+    """
     if node == rbt.nil:
         return 0
     lh = rb_black_height(rbt, node.left) + (1 if node.left.black_or_red == _BLACK else 0)
     rh = rb_black_height(rbt, node.right) + (1 if node.right.black_or_red == _BLACK else 0)
     if lh != rh:
-        raise ValueError("Left and right subtree have different black height values.")
+        raise AssertionError("Left and right subtree have different black height values.")
     return lh
 
 
