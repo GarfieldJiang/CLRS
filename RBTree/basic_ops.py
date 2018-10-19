@@ -189,7 +189,7 @@ def rb_insert_fixup(rbt: RBTree, node: RBTreeNode):
     rbt.root.color = True
 
 
-def rb_insert(rbt: RBTree, data, allow_dup_key=False) -> bool:
+def rb_insert(rbt: RBTree, data, allow_dup_key=False):
     node = rbt.root
     key = rbt.key
     p = rbt.nil
@@ -198,7 +198,7 @@ def rb_insert(rbt: RBTree, data, allow_dup_key=False) -> bool:
         p = node
         node_key = key(node.data)
         if k == node_key and not allow_dup_key:
-            return False
+            return node
         if k <= node_key:
             node = node.left
         elif k > node_key:
@@ -216,7 +216,7 @@ def rb_insert(rbt: RBTree, data, allow_dup_key=False) -> bool:
     new_node.parent = p
 
     rb_insert_fixup(rbt, new_node)
-    return True
+    return None
 
 
 def rb_transplant(rbt: RBTree, u: RBTreeNode, v: RBTreeNode):
@@ -379,8 +379,8 @@ class TestRBTreeBasicOps(TestCase):
         rbt = RBTree()
         insertion_seq = (41, 38, 31, 12, 19, 8)
         for i in insertion_seq:
-            self.assertTrue(rb_insert(rbt, i))
-            self.assertFalse(rb_insert(rbt, i))
+            self.assertTrue(rb_insert(rbt, i) is None)
+            self.assertEqual(i, rb_insert(rbt, i).data)
             rb_assert_properties(rbt)
         self.assertSequenceEqual(sorted(insertion_seq), list(rb_iter(rbt)))
 
