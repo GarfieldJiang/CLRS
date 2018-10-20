@@ -20,6 +20,8 @@ class RBTree(object):
         nil.left = nil.right = nil.parent = nil
         self.key = key or default_key
         self.root = nil
+        # Problem 13-2(a)
+        self.bh = 0
 
 
 def rb_min(rbt: RBTree, root: RBTreeNode):
@@ -186,7 +188,9 @@ def rb_insert_fixup(rbt: RBTree, node: RBTreeNode):
                 rb_left_rotate(rbt, gparent)
 
     # Fix the color of the root node.
-    rbt.root.color = True
+    if rbt.root.color == _RED:
+        rbt.bh += 1
+        rbt.root.color = _BLACK
 
 
 def rb_insert(rbt: RBTree, data, allow_dup_key=False):
@@ -240,6 +244,7 @@ def rb_transplant(rbt: RBTree, u: RBTreeNode, v: RBTreeNode):
 
 
 def rb_pop_fixup(rbt: RBTree, node: RBTreeNode):
+    exit_from_case_2 = True
     while node != rbt.root and node.color == _BLACK:
         p = node.parent
         if node == p.left:
@@ -268,6 +273,7 @@ def rb_pop_fixup(rbt: RBTree, node: RBTreeNode):
                 p.color = _BLACK
                 rb_left_rotate(rbt, p)
                 node = rbt.root
+                exit_from_case_2 = False
                 # print('left case 4')
         else:
             sibling = p.left
@@ -295,7 +301,11 @@ def rb_pop_fixup(rbt: RBTree, node: RBTreeNode):
                 p.color = _BLACK
                 rb_right_rotate(rbt, p)
                 node = rbt.root
+                exit_from_case_2 = False
                 # print('right case 4')
+
+    if rbt.root == rbt.nil or (exit_from_case_2 and node.color == _BLACK):
+        rbt.bh -= 1
     node.color = _BLACK
 
 
@@ -316,7 +326,7 @@ def rb_pop(rbt: RBTree, node: RBTreeNode):
     else:
         y = rb_min(rbt, node.right)
         color_for_check = y.color
-        fix_from = y.right  # Can be rbt.nil
+        fix_from = y.right
         if y.parent == node:
             fix_from.parent = y
         else:
@@ -364,7 +374,8 @@ def rb_assert_properties(rbt: RBTree):
     assert node.color == _BLACK
     assert rbt.nil.left == rbt.nil
     assert rbt.nil.right == rbt.nil
-    rb_black_height(rbt, rbt.root)
+    bh = rb_black_height(rbt, rbt.root)
+    assert rbt.bh == bh, "%d != %d" % (rbt.bh, bh)
     _rb_assert_properties(rbt, rbt.root)
 
 
