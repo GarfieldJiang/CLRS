@@ -2,7 +2,8 @@ from Common.tree import BinaryTreeNode
 from Common.common import default_key, rand_permutate
 from typing import Optional
 from unittest import TestCase
-from BST.basic_ops import bst_iter
+from BST.basic_ops import bst_iter, bst_search, bst_transplant, bst_min
+from random import uniform, randint
 
 
 class AVLTreeNode(BinaryTreeNode):
@@ -136,6 +137,38 @@ def avl_insert(avl: AVLTree, data, allow_dup_keys=False):
     return _avl_insert(avl, avl.root, data, allow_dup_keys)
 
 
+def avl_pop(avl: AVLTree, k):
+    """Modified from BST.basic_ops.bst_pop."""
+    node = bst_search(avl, k)
+    if not node:
+        raise ValueError()
+    if not node.left:
+        fix_from = node.parent
+        bst_transplant(avl, node, node.right)
+    elif not node.right:
+        fix_from = node.parent
+        bst_transplant(avl, node, node.left)
+    else:
+        min_node = bst_min(node.right)
+        right = node.right
+        left = node.left
+        if right != min_node:
+            fix_from = min_node.parent
+            bst_transplant(avl, min_node, min_node.right)
+            min_node.right = right
+            right.parent = min_node
+        else:
+            fix_from = min_node
+        bst_transplant(avl, node, min_node)
+        min_node.left = left
+        left.parent = min_node
+
+    while fix_from:
+        p = fix_from.parent
+        avl_balance(avl, fix_from)
+        fix_from = p
+
+
 class TestAVLTree(TestCase):
     def _assert_avl_properties_internal(self, root: AVLTreeNode, key):
         lh = avl_node_height(root.left)
@@ -165,6 +198,12 @@ class TestAVLTree(TestCase):
             self._assert_avl_properties(avl)
         self.assertSequenceEqual(sorted(insertion_seq), list(bst_iter(avl)))
 
+        deletion_seq = (8, 12, 19, 31, 38, 41)
+        for i in deletion_seq:
+            avl_pop(avl, i)
+            self._assert_avl_properties(avl)
+        self.assertSequenceEqual((), list(bst_iter(avl)))
+
     def test_rand_insertions(self):
         avl = AVLTree()
         insertion_seq = list(range(1, 129))
@@ -177,3 +216,49 @@ class TestAVLTree(TestCase):
             self.assertSequenceEqual(sorted(insertion_seq[:cnt + 1]), list(bst_iter(avl)))
             cnt += 1
         self.assertSequenceEqual(sorted(insertion_seq), list(bst_iter(avl)))
+
+    def test_special(self):
+        avl = AVLTree()
+        avl_insert(avl, 793)
+        avl_insert(avl, 757)
+        avl_pop(avl, 757)
+        avl_insert(avl, 604)
+        avl_insert(avl, 451)
+        avl_insert(avl, 4)
+        avl_pop(avl, 604)
+        avl_insert(avl, 811)
+        avl_insert(avl, 976)
+        avl_pop(avl, 793)
+        avl_insert(avl, 638)
+        avl_insert(avl, 932)
+        self._assert_avl_properties(avl)
+        avl_pop(avl, 811)
+        self._assert_avl_properties(avl)
+
+    def test_rand_insert_delete(self):
+        avl = AVLTree()
+        insertion_seq = list(range(1000))
+        rand_permutate(insertion_seq)
+        values = []
+        i = 0
+        while i < len(insertion_seq):
+            if len(values) > 0:
+                rand = uniform(0, 1)
+            else:
+                rand = 0
+            if rand > 0.5:
+                rand_index = randint(0, len(values) - 1)
+                value = values[rand_index]
+                # print("delete %d" % value)
+                values.pop(rand_index)
+                avl_pop(avl, value)
+            else:
+                value = insertion_seq[i]
+                i += 1
+                # print("insert %d" % value)
+                values.append(value)
+                values.sort()
+                avl_insert(avl, value)
+            self._assert_avl_properties(avl)
+            # print(len(values))
+            self.assertSequenceEqual(values, list(bst_iter(avl)))
