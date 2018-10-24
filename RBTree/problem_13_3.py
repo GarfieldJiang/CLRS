@@ -1,6 +1,5 @@
 from Common.tree import BinaryTreeNode
 from Common.common import default_key, rand_permutate
-from Common.sort_utilities import check_is_sorted
 from typing import Optional
 from unittest import TestCase
 from BST.basic_ops import bst_iter
