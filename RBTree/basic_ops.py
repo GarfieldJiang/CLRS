@@ -447,5 +447,3 @@ class TestRBTreeBasicOps(TestCase):
             node_count = rb_node_count(rbt, rbt.root)
             self.assertEqual(len(values), node_count)
             self.assertSequenceEqual(values, list(rb_iter(rbt)))
-
-
