@@ -34,10 +34,11 @@ class SortedMap(Map):
         return rb_search(rbt, k) != rbt.nil
 
     def __setitem__(self, k, v):
-        already = rb_insert(self._rbt, _KeyValuePair(k, v))
-        if already:
+        already = rb_search(self._rbt, k)
+        if already != self._rbt.nil:
             already.data.v = v
         else:
+            rb_insert(self._rbt, _KeyValuePair(k, v))
             self._len += 1
 
     def __len__(self):

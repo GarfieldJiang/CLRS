@@ -106,35 +106,34 @@ def avl_balance(avl: AVLTree, node: AVLTreeNode):
         avl_left_rotation(avl, node)
 
 
-def _avl_insert(avl: AVLTree, root: AVLTreeNode, data, allow_dup_keys) -> Optional[AVLTreeNode]:
+def _avl_insert(avl: AVLTree, root: AVLTreeNode, data) -> AVLTreeNode:
     key = avl.key
-    if key(data) == key(root.data) and not allow_dup_keys:
-        return root
-    ret = None
     if key(data) <= key(root.data):
         if not root.left:
             root.left = AVLTreeNode(data)
             root.left.parent = root
+            ret = root.left
         else:
-            ret = _avl_insert(avl, root.left, data, allow_dup_keys)
+            ret = _avl_insert(avl, root.left, data)
     else:
         if not root.right:
             root.right = AVLTreeNode(data)
             root.right.parent = root
             avl_update_node_height(root)
+            ret = root.right
         else:
-            ret = _avl_insert(avl, root.right, data, allow_dup_keys)
-    if not ret:
-        avl_balance(avl, root)
+            ret = _avl_insert(avl, root.right, data)
+
+    avl_balance(avl, root)
     return ret
 
 
-def avl_insert(avl: AVLTree, data, allow_dup_keys=False):
+def avl_insert(avl: AVLTree, data):
     """Problem 13-3(c)"""
     if not avl.root:
         avl.root = AVLTreeNode(data)
         return
-    return _avl_insert(avl, avl.root, data, allow_dup_keys)
+    return _avl_insert(avl, avl.root, data)
 
 
 def avl_pop(avl: AVLTree, k):
@@ -193,8 +192,7 @@ class TestAVLTree(TestCase):
         avl = AVLTree()
         insertion_seq = (41, 38, 31, 12, 19, 8)
         for i in insertion_seq:
-            self.assertTrue(avl_insert(avl, i) is None)
-            self.assertEqual(i, avl_insert(avl, i).data)
+            avl_insert(avl, i)
             self._assert_avl_properties(avl)
         self.assertSequenceEqual(sorted(insertion_seq), list(bst_iter(avl)))
 
@@ -210,8 +208,7 @@ class TestAVLTree(TestCase):
         rand_permutate(insertion_seq)
         cnt = 0
         for i in insertion_seq:
-            self.assertTrue(avl_insert(avl, i) is None)
-            self.assertEqual(i, avl_insert(avl, i).data)
+            avl_insert(avl, i)
             self._assert_avl_properties(avl)
             self.assertSequenceEqual(sorted(insertion_seq[:cnt + 1]), list(bst_iter(avl)))
             cnt += 1

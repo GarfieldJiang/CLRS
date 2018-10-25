@@ -2,10 +2,11 @@ from Common.tree import BinaryTreeNode
 from Common.common import default_key, rand_permutate
 from unittest import TestCase
 from random import uniform, randint
+from typing import Callable, Optional
 
 
-_BLACK = True
-_RED = False
+RB_BLACK = True
+RB_RED = False
 
 
 class RBTreeNode(BinaryTreeNode):
@@ -13,10 +14,13 @@ class RBTreeNode(BinaryTreeNode):
         super().__init__(data)
         self.color = color
 
+        # For convenience of code reuse.
+        self.aug = None
+
 
 class RBTree(object):
     def __init__(self, key=None):
-        nil = self.nil = RBTreeNode(None, _BLACK)
+        nil = self.nil = RBTreeNode(None, RB_BLACK)
         nil.left = nil.right = nil.parent = nil
         self.key = key or default_key
         self.root = nil
@@ -91,7 +95,7 @@ def rb_search(rbt: RBTree, k):
     return rbt.nil
 
 
-def rb_left_rotate(rbt, node):
+def rb_left_rotate(rbt, node, on_complete):
     r = node.right
     p = node.parent
     r.parent = p
@@ -106,9 +110,11 @@ def rb_left_rotate(rbt, node):
     r.left = node
     if node == rbt.root:
         rbt.root = r
+    if on_complete:
+        on_complete(r)
 
 
-def rb_right_rotate(rbt, node):
+def rb_right_rotate(rbt, node, on_complete):
     l = node.left
     p = node.parent
     l.parent = p
@@ -123,16 +129,20 @@ def rb_right_rotate(rbt, node):
     l.right = node
     if node == rbt.root:
         rbt.root = l
+    if on_complete:
+        on_complete(l)
 
 
-def rb_insert_fixup(rbt: RBTree, node: RBTreeNode):
+def rb_insert_fixup(rbt: RBTree, node: RBTreeNode,
+                    on_left_rotation_complete: Optional[Callable[[RBTreeNode], None]]=None,
+                    on_right_rotation_complete: Optional[Callable[[RBTreeNode], None]]=None):
     # If the newly added node becomes the root, then its parent is nil (and therefore black).
-    while node.parent.color == _RED:  # Red node has a red parent, so needs fixing.
+    while node.parent.color == RB_RED:  # Red node has a red parent, so needs fixing.
         # Grandparent exists since parent is red. And of course grand parent is black.
         gparent = node.parent.parent
         if node.parent == gparent.left:
             uncle = gparent.right
-            if uncle.color == _RED:
+            if uncle.color == RB_RED:
                 # Case 1:
                 #
                 #                GP                 gp <-- node
@@ -146,8 +156,8 @@ def rb_insert_fixup(rbt: RBTree, node: RBTreeNode):
                 #             p      u    -->    P      U
                 #            / \    / \         / \    / \
                 #      node --> x                  x
-                node.parent.color = uncle.color = _BLACK
-                gparent.color = _RED
+                node.parent.color = uncle.color = RB_BLACK
+                gparent.color = RB_RED
                 node = gparent
             else:
                 if node == node.parent.right:
@@ -161,7 +171,7 @@ def rb_insert_fixup(rbt: RBTree, node: RBTreeNode):
                     #           / \                   / \
                     #          A   B                     A
                     node = node.parent
-                    rb_left_rotate(rbt, node)
+                    rb_left_rotate(rbt, node, on_left_rotation_complete)
                 # Case 3:
                 #
                 #               GP                        P
@@ -170,30 +180,37 @@ def rb_insert_fixup(rbt: RBTree, node: RBTreeNode):
                 #           / \    / \                      /  \
                 # node --> x   A                           A    U
                 #
-                node.parent.color = _BLACK
-                gparent.color = _RED
-                rb_right_rotate(rbt, gparent)
+                node.parent.color = RB_BLACK
+                gparent.color = RB_RED
+                rb_right_rotate(rbt, gparent, on_right_rotation_complete)
         else:  # Symmetric to the corresponding if block
             uncle = gparent.left
-            if uncle.color == _RED:
-                node.parent.color = uncle.color = _BLACK
-                gparent.color = _RED
+            if uncle.color == RB_RED:
+                node.parent.color = uncle.color = RB_BLACK
+                gparent.color = RB_RED
                 node = gparent
             else:
                 if node == node.parent.left:
                     node = node.parent
-                    rb_right_rotate(rbt, node)
-                node.parent.color = _BLACK
-                gparent.color = _RED
-                rb_left_rotate(rbt, gparent)
+                    rb_right_rotate(rbt, node, on_right_rotation_complete)
+                node.parent.color = RB_BLACK
+                gparent.color = RB_RED
+                rb_left_rotate(rbt, gparent, on_left_rotation_complete)
 
     # Fix the color of the root node.
-    if rbt.root.color == _RED:
+    if rbt.root.color == RB_RED:
         rbt.bh += 1
-        rbt.root.color = _BLACK
+        rbt.root.color = RB_BLACK
 
 
-def rb_insert(rbt: RBTree, data, allow_dup_key=False):
+def rb_insert(rbt: RBTree, data) -> RBTreeNode:
+    new_node = rb_insert_raw(rbt, data)
+    rb_insert_fixup(rbt, new_node)
+    return new_node
+
+
+def rb_insert_raw(rbt: RBTree, data) -> RBTreeNode:
+    new_node = RBTreeNode(data, RB_RED)
     node = rbt.root
     key = rbt.key
     p = rbt.nil
@@ -201,16 +218,11 @@ def rb_insert(rbt: RBTree, data, allow_dup_key=False):
     while node != rbt.nil:
         p = node
         node_key = key(node.data)
-        if k == node_key and not allow_dup_key:
-            return node
         if k <= node_key:
             node = node.left
         elif k > node_key:
             node = node.right
-
-    new_node = RBTreeNode(data, _RED)
     new_node.left = new_node.right = new_node.parent = rbt.nil
-
     if p == rbt.nil:
         rbt.root = new_node
     elif k <= key(p.data):
@@ -218,9 +230,7 @@ def rb_insert(rbt: RBTree, data, allow_dup_key=False):
     else:
         p.right = new_node
     new_node.parent = p
-
-    rb_insert_fixup(rbt, new_node)
-    return None
+    return new_node
 
 
 def rb_transplant(rbt: RBTree, u: RBTreeNode, v: RBTreeNode):
@@ -243,70 +253,72 @@ def rb_transplant(rbt: RBTree, u: RBTreeNode, v: RBTreeNode):
     v.parent = u.parent
 
 
-def rb_pop_fixup(rbt: RBTree, node: RBTreeNode):
+def rb_pop_fixup(rbt: RBTree, node: RBTreeNode,
+                 on_left_rotation_complete: Optional[Callable[[RBTreeNode], None]]=None,
+                 on_right_rotation_complete: Optional[Callable[[RBTreeNode], None]]=None):
     exit_from_case_2 = True
-    while node != rbt.root and node.color == _BLACK:
+    while node != rbt.root and node.color == RB_BLACK:
         p = node.parent
         if node == p.left:
             sibling = p.right
             assert sibling != rbt.nil
-            if sibling.color == _RED:
-                sibling.color = _BLACK
-                p.color = _RED
-                rb_left_rotate(rbt, p)
+            if sibling.color == RB_RED:
+                sibling.color = RB_BLACK
+                p.color = RB_RED
+                rb_left_rotate(rbt, p, on_left_rotation_complete)
                 p = node.parent
                 sibling = p.right
                 # print('left case 1')
-            if sibling.left.color == _BLACK and sibling.right.color == _BLACK:
-                sibling.color = _RED
+            if sibling.left.color == RB_BLACK and sibling.right.color == RB_BLACK:
+                sibling.color = RB_RED
                 node = node.parent
                 # print('left case 2')
             else:
-                if sibling.right.color == _BLACK:
-                    sibling.left.color = _BLACK
-                    sibling.color = _RED
-                    rb_right_rotate(rbt, sibling)
+                if sibling.right.color == RB_BLACK:
+                    sibling.left.color = RB_BLACK
+                    sibling.color = RB_RED
+                    rb_right_rotate(rbt, sibling, on_right_rotation_complete)
                     sibling = sibling.parent
                     # print('left case 3')
-                sibling.right.color = _BLACK
+                sibling.right.color = RB_BLACK
                 sibling.color = p.color
-                p.color = _BLACK
-                rb_left_rotate(rbt, p)
+                p.color = RB_BLACK
+                rb_left_rotate(rbt, p, on_left_rotation_complete)
                 node = rbt.root
                 exit_from_case_2 = False
                 # print('left case 4')
         else:
             sibling = p.left
             assert sibling != rbt.nil
-            if sibling.color == _RED:
-                sibling.color = _BLACK
-                p.color = _RED
-                rb_right_rotate(rbt, p)
+            if sibling.color == RB_RED:
+                sibling.color = RB_BLACK
+                p.color = RB_RED
+                rb_right_rotate(rbt, p, on_right_rotation_complete)
                 p = node.parent
                 sibling = p.left
                 # print('right case 1')
-            if sibling.right.color == _BLACK and sibling.left.color == _BLACK:
-                sibling.color = _RED
+            if sibling.right.color == RB_BLACK and sibling.left.color == RB_BLACK:
+                sibling.color = RB_RED
                 node = node.parent
                 # print('right case 2')
             else:
-                if sibling.left.color == _BLACK:
-                    sibling.right.color = _BLACK
-                    sibling.color = _RED
-                    rb_left_rotate(rbt, sibling)
+                if sibling.left.color == RB_BLACK:
+                    sibling.right.color = RB_BLACK
+                    sibling.color = RB_RED
+                    rb_left_rotate(rbt, sibling, on_left_rotation_complete)
                     sibling = sibling.parent
                     # print('right case 3')
-                sibling.left.color = _BLACK
+                sibling.left.color = RB_BLACK
                 sibling.color = p.color
-                p.color = _BLACK
-                rb_right_rotate(rbt, p)
+                p.color = RB_BLACK
+                rb_right_rotate(rbt, p, on_right_rotation_complete)
                 node = rbt.root
                 exit_from_case_2 = False
                 # print('right case 4')
 
-    if rbt.root == rbt.nil or (exit_from_case_2 and node.color == _BLACK):
+    if rbt.root == rbt.nil or (exit_from_case_2 and node.color == RB_BLACK):
         rbt.bh -= 1
-    node.color = _BLACK
+    node.color = RB_BLACK
 
 
 def rb_pop(rbt: RBTree, node: RBTreeNode):
@@ -316,6 +328,12 @@ def rb_pop(rbt: RBTree, node: RBTreeNode):
     :param node:
     :return:
     """
+    color_for_check, fix_from = rb_pop_raw(rbt, node)
+    if color_for_check == RB_BLACK:
+        rb_pop_fixup(rbt, fix_from)
+
+
+def rb_pop_raw(rbt, node):
     color_for_check = node.color
     if node.left == rbt.nil:
         fix_from = node.right
@@ -337,8 +355,7 @@ def rb_pop(rbt: RBTree, node: RBTreeNode):
         y.color = node.color
         y.left = node.left
         y.left.parent = y
-    if color_for_check == _BLACK:
-        rb_pop_fixup(rbt, fix_from)
+    return color_for_check, fix_from
 
 
 def rb_black_height(rbt: RBTree, node: RBTreeNode):
@@ -350,19 +367,19 @@ def rb_black_height(rbt: RBTree, node: RBTreeNode):
     """
     if node == rbt.nil:
         return 0
-    lh = rb_black_height(rbt, node.left) + (1 if node.left.color == _BLACK else 0)
-    rh = rb_black_height(rbt, node.right) + (1 if node.right.color == _BLACK else 0)
+    lh = rb_black_height(rbt, node.left) + (1 if node.left.color == RB_BLACK else 0)
+    rh = rb_black_height(rbt, node.right) + (1 if node.right.color == RB_BLACK else 0)
     if lh != rh:
         raise AssertionError("Left and right subtree have different black height values.")
     return lh
 
 
 def _rb_assert_properties(rbt: RBTree, node: RBTreeNode):
-    assert node.color in (_RED, _BLACK)
+    assert node.color in (RB_RED, RB_BLACK)
 
-    if node.color == _RED:
-        assert node.left.color == _BLACK
-        assert node.right.color == _BLACK
+    if node.color == RB_RED:
+        assert node.left.color == RB_BLACK
+        assert node.right.color == RB_BLACK
     if node.left != rbt.nil:
         _rb_assert_properties(rbt, node.left)
     if node.right != rbt.nil:
@@ -371,7 +388,7 @@ def _rb_assert_properties(rbt: RBTree, node: RBTreeNode):
 
 def rb_assert_properties(rbt: RBTree):
     node = rbt.root
-    assert node.color == _BLACK
+    assert node.color == RB_BLACK
     assert rbt.nil.left == rbt.nil
     assert rbt.nil.right == rbt.nil
     bh = rb_black_height(rbt, rbt.root)
@@ -390,8 +407,7 @@ class TestRBTreeBasicOps(TestCase):
         rbt = RBTree()
         insertion_seq = (41, 38, 31, 12, 19, 8)
         for i in insertion_seq:
-            self.assertTrue(rb_insert(rbt, i) is None)
-            self.assertEqual(i, rb_insert(rbt, i).data)
+            rb_insert(rbt, i)
             rb_assert_properties(rbt)
         self.assertSequenceEqual(sorted(insertion_seq), list(rb_iter(rbt)))
 
