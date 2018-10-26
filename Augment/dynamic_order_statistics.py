@@ -95,9 +95,6 @@ def os_update_size_upward(ost: RBTree, node: RBTreeNode):
 def os_insert(ost: RBTree, data) -> RBTreeNode:
     """
     Insert a new element to the given OS tree.
-    :param ost:
-    :param data:
-    :return:
     """
     new_node = rb_insert_raw(ost, data)
     new_node.aug = OSTreeNodeAugment(1)
@@ -107,6 +104,9 @@ def os_insert(ost: RBTree, data) -> RBTreeNode:
 
 
 def os_pop(ost: RBTree, node: RBTreeNode):
+    """
+    Remove a node from the OS tree.
+    """
     color_for_check, fix_from = rb_pop_raw(ost, node)
     os_update_size_upward(ost, fix_from if fix_from != ost.nil else fix_from.parent)
     if color_for_check == RB_BLACK:
