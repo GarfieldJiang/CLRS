@@ -1,4 +1,5 @@
 from unittest import TestCase
+from Augment import dynamic_order_statistics as os
 
 
 class LinkedListNode(object):
@@ -20,9 +21,9 @@ def make_loop(n):
     return h
 
 
-def josephus_simple(n: int, m: int):
+def josephus_a(n: int, m: int):
     """
-    Problem 14-2(a)
+    Problem 14-2(a). O(mn) time.
     """
     assert n > 0
     assert 0 < m <= n
@@ -42,7 +43,31 @@ def josephus_simple(n: int, m: int):
     return ret
 
 
+def josephus_b(n: int, m: int):
+    """
+    Problem 14-2(b). O(n\lg n) time.
+    """
+    assert n > 0
+    assert 0 < m <= n
+
+    ost = os.os_tree_create()
+    for i in range(1, n + 1):
+        os.os_insert(ost, i)
+
+    ret = []
+    rank = m
+    for i in range(1, n + 1):
+        node = os.os_select(ost, rank)
+        ret.append(node.data)
+        os.os_pop(ost, node)
+        if i < n:
+            rank = (rank + m - 2) % (n - i) + 1
+
+    return ret
+
+
 class TestJosephus(TestCase):
-    def test_josephus_simple(self):
-        self.assertSequenceEqual([1], josephus_simple(1, 1))
-        self.assertSequenceEqual([3, 6, 2, 7, 5, 1, 4], josephus_simple(7, 3))
+    def test_josephus(self):
+        for josephus in (josephus_a, josephus_b):
+            self.assertSequenceEqual([1], josephus(1, 1))
+            self.assertSequenceEqual([3, 6, 2, 7, 5, 1, 4], josephus(7, 3))
