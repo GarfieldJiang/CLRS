@@ -47,42 +47,42 @@ def avl_update_node_height(node: AVLTreeNode):
 
 def avl_right_rotation(avl: AVLTree, node: AVLTreeNode):
     p = node.parent
-    l = node.left
-    node.parent = l
+    left = node.left
+    node.parent = left
     if not p:
-        avl.root = l
+        avl.root = left
     elif node == p.left:
-        p.left = l
+        p.left = left
     else:
-        p.right = l
-    l.parent = p
+        p.right = left
+    left.parent = p
 
-    node.left = l.right
-    if l.right:
-        l.right.parent = node
-    l.right = node
+    node.left = left.right
+    if left.right:
+        left.right.parent = node
+    left.right = node
     avl_update_node_height(node)
-    avl_update_node_height(l)
+    avl_update_node_height(left)
 
 
 def avl_left_rotation(avl: AVLTree, node: AVLTreeNode):
     p = node.parent
-    r = node.right
-    node.parent = r
+    right = node.right
+    node.parent = right
     if not p:
-        avl.root = r
+        avl.root = right
     elif node == p.left:
-        p.left = r
+        p.left = right
     else:
-        p.right = r
-    r.parent = p
+        p.right = right
+    right.parent = p
 
-    node.right = r.left
-    if r.left:
-        r.left.parent = node
-    r.left = node
+    node.right = right.left
+    if right.left:
+        right.left.parent = node
+    right.left = node
     avl_update_node_height(node)
-    avl_update_node_height(r)
+    avl_update_node_height(right)
 
 
 def avl_balance(avl: AVLTree, node: AVLTreeNode):
