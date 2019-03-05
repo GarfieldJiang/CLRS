@@ -45,11 +45,7 @@ def reconstruct_path(came_from: dict, srcKey, dstKey):
 
 
 class TestDijkstra(TestCase):
-    def test_dijkstra_7_vertex_undirected_graph_with_one_isolated_vertex(self):
-        """
-        Vertex 7 will be isolated.
-        :return:
-        """
+    def test_dijkstra_basic(self):
         graph = Graph()
         vertices = [Vertex(i) for i in range(1, 8)]
         for v in vertices:
