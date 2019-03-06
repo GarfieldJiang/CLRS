@@ -26,7 +26,7 @@ def universal_sink(adj_matrix):
     if i == v:
         return -1
 
-    return -1 if (sum(1 for elem in adj_matrix[i] if elem == 0) != v or \
+    return -1 if (sum(1 for elem in adj_matrix[i] if elem == 0) != v or
                   sum(1 for row in adj_matrix if row[i] == 1) != v - 1) else i
 
 
