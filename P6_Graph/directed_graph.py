@@ -42,11 +42,18 @@ class Graph(object):
     def get_vertex(self, key):
         return self._vertices[key]
 
+    def vertex_keys(self):
+        for v_key in self._vertices.keys(): yield v_key
+
     def vertices(self):
-        for v_key in self._vertices: yield v_key
+        for v in self._vertices.values(): yield v
 
     def has_vertex(self, key):
         return key in self._vertices
+
+    @property
+    def vertex_len(self):
+        return len(self._vertices)
 
     def add_edge(self, srcKey, dstKey, weight: float = 0):
         assert srcKey in self._vertices
