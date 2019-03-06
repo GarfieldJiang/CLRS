@@ -72,13 +72,15 @@ def calc_cost(graph, came_from, cur_key, costs):
     return costs[cur_key]
 
 
-def draw_costs(graph, terrain, came_from, src_key, dst_key):
+def draw_path(graph, terrain, came_from, src_key, dst_key):
     h = len(terrain)
     w = len(terrain[0])
     costs = {src_key: 0}
     for x in range(0, w):
         for y in range(0, h):
             calc_cost(graph, came_from, (x, y), costs)
+
+    path = reconstruct_path(came_from, src_key, dst_key)
 
     print('-' * (w * 4 - 1))
     for y in range(0, h):
@@ -87,6 +89,8 @@ def draw_costs(graph, terrain, came_from, src_key, dst_key):
                 stdout.write('\033[1;31m')
             elif (x, y) == dst_key:
                 stdout.write('\033[1;32m')
+            elif (x, y) in path:
+                stdout.write('\033[1;35m')
             if terrain[y][x] < 0:
                 stdout.write('###')
             else:
@@ -130,7 +134,7 @@ def _main():
         return abs(key[0] - dst[0]) + abs(key[1] - dst[1]) if key else 0
 
     came_from = astar(graph, src, dst, h)
-    draw_costs(graph, terrain, came_from, src, dst)
+    draw_path(graph, terrain, came_from, src, dst)
 
 if __name__ == '__main__':
     _main()
