@@ -43,7 +43,7 @@ class Graph(object):
         return self._vertices[key]
 
     def vertices(self):
-        for v in self._vertices: yield v
+        for v_key in self._vertices: yield v_key
 
     def has_vertex(self, key):
         return key in self._vertices
