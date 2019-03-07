@@ -1,11 +1,12 @@
 from typing import Any
+from collections import OrderedDict
 
 
 class Vertex(object):
     def __init__(self, key):
         assert key is not None
         self._key = key
-        self._successors: dict[Any:float] = {}
+        self._successors = OrderedDict()
 
     def _add_successor(self, successor_key, weight: float):
         self._successors[successor_key] = weight
@@ -29,7 +30,7 @@ class Vertex(object):
 
 class Graph(object):
     def __init__(self):
-        self._vertices: dict[Any:Vertex] = {}
+        self._vertices = OrderedDict()
 
     def add_vertex(self, v: Vertex):
         assert v
@@ -61,6 +62,17 @@ class Graph(object):
         src = self._vertices[srcKey]
         assert not src.has_successor(dstKey)
         src._add_successor(dstKey, weight)
+
+    def add_2_edges(self, vertexKey1, vertexKey2, weight: float = 0):
+        assert vertexKey1 != vertexKey2
+        assert vertexKey1 in self._vertices
+        assert vertexKey2 in self._vertices
+        u = self._vertices[vertexKey1]
+        v = self._vertices[vertexKey2]
+        assert not u.has_successor(v) and not v.has_successor(u)
+        u._add_successor(vertexKey2, weight)
+        v._add_successor(vertexKey1, weight)
+
 
     def has_edge(self, srcKey: Vertex, dstKey: Vertex):
         assert srcKey in self._vertices
