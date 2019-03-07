@@ -1,5 +1,5 @@
 from P6_Graph.directed_graph import Graph, Vertex
-from typing import Callable
+from typing import Callable, Tuple
 from collections import deque
 from unittest import TestCase
 

@@ -1,4 +1,3 @@
-from typing import Any
 from collections import OrderedDict
 
 
@@ -27,6 +26,9 @@ class Vertex(object):
             return self._successors[successor_key]
         return float('inf')
 
+    def successor_len(self):
+        return len(self._successors)
+
 
 class Graph(object):
     def __init__(self):
@@ -40,17 +42,17 @@ class Graph(object):
     def has_vertex(self, key):
         return key in self._vertices
 
-    def get_vertex(self, key):
+    def get_vertex(self, key) -> Vertex:
         return self._vertices[key]
 
     def vertex_keys(self):
-        for v_key in self._vertices.keys(): yield v_key
+        for v_key in self._vertices.keys():
+            yield v_key
 
     def vertices(self):
-        for v in self._vertices.values(): yield v
+        for v in self._vertices.values():
+            yield v
 
-    def has_vertex(self, key):
-        return key in self._vertices
 
     @property
     def vertex_len(self):
