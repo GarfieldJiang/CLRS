@@ -3,10 +3,10 @@ from P6_Graph.directed_graph import Graph
 from unittest import TestCase
 
 
-def dijkstra(graph: Graph, srcKey) -> dict:
-    open_set = {srcKey: 0}
+def dijkstra(graph: Graph, src_key) -> dict:
+    open_set = {src_key: 0}
     closed_set = set()
-    came_from = {srcKey: None}
+    came_from = {src_key: None}
     while open_set:
         u, u_cost = extract_min(open_set)
         closed_set.add(u)

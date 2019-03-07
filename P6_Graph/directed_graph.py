@@ -8,7 +8,7 @@ class Vertex(object):
         self._key = key
         self._successors = OrderedDict()
 
-    def _add_successor(self, successor_key, weight: float):
+    def add_successor(self, successor_key, weight: float):
         self._successors[successor_key] = weight
 
     @property
@@ -22,7 +22,7 @@ class Vertex(object):
     def has_successor(self, successor_key):
         return successor_key in self._successors.keys()
 
-    def _weight(self, successor_key) -> float:
+    def weight(self, successor_key) -> float:
         if successor_key in self._successors.keys():
             return self._successors[successor_key]
         return float('inf')
@@ -56,33 +56,32 @@ class Graph(object):
     def vertex_len(self):
         return len(self._vertices)
 
-    def add_edge(self, srcKey, dstKey, weight: float = 0):
-        assert srcKey in self._vertices
-        assert dstKey in self._vertices
-        src = self._vertices[srcKey]
-        assert not src.has_successor(dstKey)
-        src._add_successor(dstKey, weight)
+    def add_edge(self, src_key, dst_key, weight: float = 0):
+        assert src_key in self._vertices
+        assert dst_key in self._vertices
+        src = self._vertices[src_key]
+        assert not src.has_successor(dst_key)
+        src.add_successor(dst_key, weight)
 
-    def add_2_edges(self, vertexKey1, vertexKey2, weight: float = 0):
-        assert vertexKey1 != vertexKey2
-        assert vertexKey1 in self._vertices
-        assert vertexKey2 in self._vertices
-        u = self._vertices[vertexKey1]
-        v = self._vertices[vertexKey2]
+    def add_2_edges(self, vert_key1, vert_key2, weight: float = 0):
+        assert vert_key1 != vert_key2
+        assert vert_key1 in self._vertices
+        assert vert_key2 in self._vertices
+        u = self._vertices[vert_key1]
+        v = self._vertices[vert_key2]
         assert not u.has_successor(v) and not v.has_successor(u)
-        u._add_successor(vertexKey2, weight)
-        v._add_successor(vertexKey1, weight)
+        u.add_successor(vert_key2, weight)
+        v.add_successor(vert_key1, weight)
 
+    def has_edge(self, src_key: Vertex, dst_key: Vertex):
+        assert src_key in self._vertices
+        assert dst_key in self._vertices
+        src = self._vertices[src_key]
+        return src.has_successor(dst_key)
 
-    def has_edge(self, srcKey: Vertex, dstKey: Vertex):
-        assert srcKey in self._vertices
-        assert dstKey in self._vertices
-        src = self._vertices[srcKey]
-        return src.has_successor(dstKey)
-
-    def edge_weight(self, srcKey, dstKey):
-        assert srcKey in self._vertices
-        assert dstKey in self._vertices
-        src = self._vertices[srcKey]
-        assert src.has_successor(dstKey)
-        return src._weight(dstKey)
+    def edge_weight(self, src_key, dst_key):
+        assert src_key in self._vertices
+        assert dst_key in self._vertices
+        src = self._vertices[src_key]
+        assert src.has_successor(dst_key)
+        return src.weight(dst_key)

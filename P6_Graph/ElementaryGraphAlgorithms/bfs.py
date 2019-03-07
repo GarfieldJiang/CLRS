@@ -9,7 +9,7 @@ def bfs(graph: Graph, visit_func: Callable[[Vertex], bool]=None) -> dict:
     came_from = {}
     visited = set()   # Gray or black nodes
     if not visit_func:
-        visit_func = lambda _: True
+        def visit_func(_): return True
 
     for v in graph.vertex_keys():
         if v in visited:
@@ -18,21 +18,21 @@ def bfs(graph: Graph, visit_func: Callable[[Vertex], bool]=None) -> dict:
     return came_from
 
 
-def bfs_with_src(graph: Graph, srcKey, visit_func: Callable[[Vertex], bool]=None) -> dict:
+def bfs_with_src(graph: Graph, src_key, visit_func: Callable[[Vertex], bool]=None) -> dict:
     open_set = deque()
     came_from = {}
     visited = set()   # Gray or black nodes
     if not visit_func:
-        visit_func = lambda _: True
+        def visit_func(_): return True
 
-    _bfs_internal(graph, srcKey, visit_func, open_set, came_from, visited)
+    _bfs_internal(graph, src_key, visit_func, open_set, came_from, visited)
     return came_from
 
 
-def _bfs_internal(graph: Graph, srcKey, visit_func: Callable[[Vertex], bool],
-        open_set: deque, came_from: dict, visited: set):
-    open_set.appendleft(srcKey)
-    visited.add(srcKey)
+def _bfs_internal(graph: Graph, src_key, visit_func: Callable[[Vertex], bool],
+                  open_set: deque, came_from: dict, visited: set):
+    open_set.appendleft(src_key)
+    visited.add(src_key)
 
     while open_set:
         u = open_set.pop()

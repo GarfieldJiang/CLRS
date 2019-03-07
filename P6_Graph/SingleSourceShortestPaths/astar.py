@@ -5,16 +5,16 @@ from unittest import TestCase
 from sys import stdout
 
 
-def astar(graph: Graph, srcKey, dstKey, heuristic_func: Callable[[Any], float]=None) -> dict:
-    open_set = {srcKey: 0}
+def astar(graph: Graph, src_key, dst_key, heuristic_func: Callable[[Any], float]=None) -> dict:
+    open_set = {src_key: 0}
     closed_set = set()
-    came_from = {srcKey: None}
+    came_from = {src_key: None}
 
     while open_set:
         u, u_cost = extract_min(open_set, heuristic_func)  # Diff from Dijkstra
         closed_set.add(u)
 
-        if u == dstKey:  # Diff from dijkstra
+        if u == dst_key:  # Diff from dijkstra
             break
 
         for v, w in graph.get_vertex(u).successors():
@@ -135,6 +135,7 @@ def _main():
 
     came_from = astar(graph, src, dst, h)
     draw_path(graph, terrain, came_from, src, dst)
+
 
 if __name__ == '__main__':
     _main()

@@ -2,10 +2,6 @@ from typing import Tuple, Any, Callable
 from P6_Graph.directed_graph import Graph, Vertex
 
 
-def _null_heuristic_func(vertex_key):
-    return 0
-
-
 def extract_min(open_set: dict, heuristic_func: Callable[[Any], float]=None) -> Tuple[Any, float]:
     """
     Viewing open_set as a priority queue, this function retrieves the item with the minimum cost.
@@ -14,7 +10,8 @@ def extract_min(open_set: dict, heuristic_func: Callable[[Any], float]=None) -> 
     :return:
     """
     assert open_set
-    heuristic_func = heuristic_func or _null_heuristic_func
+    if not heuristic_func:
+        def heuristic_func(_): return 0
     min_cost = float('inf')
     min_vertex_key = None
     for vertex_key, cost in open_set.items():
@@ -25,21 +22,21 @@ def extract_min(open_set: dict, heuristic_func: Callable[[Any], float]=None) -> 
     return min_vertex_key, min_cost
 
 
-def reconstruct_path(came_from: dict, srcKey, dstKey) -> list:
+def reconstruct_path(came_from: dict, src_key, dst_key) -> list:
     """
     Reconstruct path from the came_from dictionary.
     :param came_from:
-    :param srcKey:
-    :param dstKey:
+    :param src_key:
+    :param dst_key:
     :return:
     """
     path: list = []
-    while dstKey != srcKey:
-        path.append(dstKey)
-        dstKey = came_from[dstKey] if dstKey in came_from else None
-        if not dstKey:
+    while dst_key != src_key:
+        path.append(dst_key)
+        dst_key = came_from[dst_key] if dst_key in came_from else None
+        if not dst_key:
             return []
-    path.append(srcKey)
+    path.append(src_key)
     path.reverse()
     return path
 
