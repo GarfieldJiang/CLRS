@@ -14,7 +14,7 @@ class DFSResult:
         return (self.came_from == other.came_from and self.discover_times == other.discover_times
                 and self.finish_times == other.finish_times)
 
-class _TimeCounter:
+class TimeCounter:
     def __init__(self):
         self._time = 0
 
@@ -31,9 +31,9 @@ def dfs(graph: Graph, pre_visit_func: Callable[[Any], bool]=None, post_visit_fun
     if not post_visit_func:
         def post_visit_func(_): return True
     result = DFSResult()
-    time = _TimeCounter()
+    time = TimeCounter()
     for v in graph.vertex_keys():
-        if v not in result.discover_times and not _dfs_internal(
+        if v not in result.discover_times and not dfs_internal(
                 graph, v, pre_visit_func, post_visit_func, result, time):
             break
     return result
@@ -47,14 +47,14 @@ def dfs_with_src(graph: Graph, src_key, pre_visit_func: Callable[[Any], bool]=No
     if not post_visit_func:
         def post_visit_func(_): return True
     result = DFSResult()
-    _dfs_internal(graph, src_key, pre_visit_func, post_visit_func, result, _TimeCounter())
+    dfs_internal(graph, src_key, pre_visit_func, post_visit_func, result, TimeCounter())
     return result
 
 
-def _dfs_internal(graph: Graph, src_key,
-                  pre_visit_func: Callable[[Any], bool],
-                  post_visit_func: Callable[[Any], bool],
-                  result: DFSResult, time: _TimeCounter) -> bool:
+def dfs_internal(graph: Graph, src_key,
+                 pre_visit_func: Callable[[Any], bool],
+                 post_visit_func: Callable[[Any], bool],
+                 result: DFSResult, time: TimeCounter) -> bool:
     if not pre_visit_func(src_key):
         return False
     stack = [(src_key, graph.get_vertex(src_key).successors())]
