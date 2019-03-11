@@ -8,7 +8,12 @@ class Vertex(object):
         self._successors = OrderedDict()
 
     def add_successor(self, successor_key, weight: float):
+        assert successor_key not in self._successors
         self._successors[successor_key] = weight
+
+    def remove_successor(self, successor_key):
+        assert successor_key in self._successors
+        self._successors.pop(successor_key)
 
     @property
     def key(self):
@@ -64,6 +69,11 @@ class Graph(object):
         src = self._vertices[src_key]
         assert not src.has_successor(dst_key)
         src.add_successor(dst_key, weight)
+
+    def remove_edge(self, src_key, dst_key):
+        assert self.has_edge(src_key, dst_key)
+        src = self._vertices[src_key]
+
 
     def add_2_edges(self, vert_key1, vert_key2, weight: float = 0):
         assert vert_key1 != vert_key2

@@ -1,5 +1,5 @@
 from P6_Graph.directed_graph import Graph, Vertex
-from typing import Callable
+from typing import Callable, Any
 from unittest import TestCase
 
 class DFSResult:
@@ -23,7 +23,7 @@ class _TimeCounter:
         return self._time
 
 
-def dfs(graph: Graph, pre_visit_func: Callable[[Vertex], bool]=None, post_visit_func: Callable[[Vertex], bool]=None)\
+def dfs(graph: Graph, pre_visit_func: Callable[[Any], bool]=None, post_visit_func: Callable[[Any], bool]=None)\
         -> DFSResult:
     """Ex. 22.3-7"""
     if not pre_visit_func:
@@ -39,8 +39,8 @@ def dfs(graph: Graph, pre_visit_func: Callable[[Vertex], bool]=None, post_visit_
     return result
 
 
-def dfs_with_src(graph: Graph, src_key, pre_visit_func: Callable[[Vertex], bool]=None,
-                 post_visit_func: Callable[[Vertex], bool]=None) -> DFSResult:
+def dfs_with_src(graph: Graph, src_key, pre_visit_func: Callable[[Any], bool]=None,
+                 post_visit_func: Callable[[Any], bool]=None) -> DFSResult:
     """Ex. 22.3-7"""
     if not pre_visit_func:
         def pre_visit_func(_): return True
@@ -52,8 +52,8 @@ def dfs_with_src(graph: Graph, src_key, pre_visit_func: Callable[[Vertex], bool]
 
 
 def _dfs_internal(graph: Graph, src_key,
-                  pre_visit_func: Callable[[Vertex], bool],
-                  post_visit_func: Callable[[Vertex], bool],
+                  pre_visit_func: Callable[[Any], bool],
+                  post_visit_func: Callable[[Any], bool],
                   result: DFSResult, time: _TimeCounter) -> bool:
     if not pre_visit_func(src_key):
         return False

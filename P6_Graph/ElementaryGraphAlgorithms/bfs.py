@@ -1,10 +1,10 @@
 from P6_Graph.directed_graph import Graph, Vertex
-from typing import Callable, Tuple
+from typing import Callable, Tuple, Any
 from collections import deque
 from unittest import TestCase
 
 
-def bfs(graph: Graph, visit_func: Callable[[Vertex], bool]=None) -> Tuple[dict, dict]:
+def bfs(graph: Graph, visit_func: Callable[[Any], bool]=None) -> Tuple[dict, dict]:
     open_set = deque()
     came_from = {}
     depths = {}
@@ -19,7 +19,7 @@ def bfs(graph: Graph, visit_func: Callable[[Vertex], bool]=None) -> Tuple[dict, 
     return came_from, depths
 
 
-def bfs_with_src(graph: Graph, src_key, visit_func: Callable[[Vertex], bool]=None) -> Tuple[dict, dict]:
+def bfs_with_src(graph: Graph, src_key, visit_func: Callable[[Any], bool]=None) -> Tuple[dict, dict]:
     open_set = deque()
     came_from = {}
     depths = {}
@@ -31,7 +31,7 @@ def bfs_with_src(graph: Graph, src_key, visit_func: Callable[[Vertex], bool]=Non
     return came_from, depths
 
 
-def _bfs_internal(graph: Graph, src_key, visit_func: Callable[[Vertex], bool],
+def _bfs_internal(graph: Graph, src_key, visit_func: Callable[[Any], bool],
                   open_set: deque, came_from: dict, depths: dict, visited: set):
     open_set.appendleft(src_key)
     visited.add(src_key)
