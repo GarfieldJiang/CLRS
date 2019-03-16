@@ -31,6 +31,7 @@ class Vertex(object):
             return self._successors[successor_key]
         return float('inf')
 
+    @property
     def successor_len(self):
         return len(self._successors)
 
@@ -72,8 +73,8 @@ class Graph(object):
 
     def remove_edge(self, src_key, dst_key):
         assert self.has_edge(src_key, dst_key)
-        src = self._vertices[src_key]
-
+        src: Vertex = self._vertices[src_key]
+        src.remove_successor(dst_key)
 
     def add_2_edges(self, vert_key1, vert_key2, weight: float = 0):
         assert vert_key1 != vert_key2
