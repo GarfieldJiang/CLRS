@@ -8,8 +8,8 @@ from typing import List
 def scc_dfs(graph: Graph) -> List[List]:
     post_visit_array = []
 
-    def post_visit_first_round(v_key):
-        post_visit_array.append(v_key)
+    def post_visit_first_round(_v_key):
+        post_visit_array.append(_v_key)
         return True
 
     dfs(graph, None, post_visit_first_round)
@@ -32,7 +32,7 @@ def _retrieve_sccs(result: DFSResult) -> List[List]:
         newly_tackled_vertices = {child_key}
         scc_index = -1
         v_key = parent_key
-        while v_key != None:
+        while v_key is not None:
             if v_key in tackled_vertices:
                 scc_index = tackled_vertices[parent_key]
                 break
@@ -48,15 +48,59 @@ def _retrieve_sccs(result: DFSResult) -> List[List]:
     return sccs
 
 
+class TarjanCache(object):
+    def __init__(self):
+        self.discover_times = {}
+        self.finish_times = {}
+        self.low = {}
+        self.in_stack = set()
+        self.stack = []
+
+
+def _tarjan_internal(graph: Graph, src_key, sccs: List[List], cache: TarjanCache, time: TimeCounter):
+    cache.in_stack.add(src_key)
+    cache.stack.append(src_key)
+    cache.discover_times[src_key] = cache.low[src_key] = time.next()
+    for v_key, _ in graph.get_vertex(src_key).successors():
+        if v_key not in cache.discover_times:
+            _tarjan_internal(graph, v_key, sccs, cache, time)
+            cache.low[src_key] = min(cache.low[src_key], cache.low[v_key])
+        elif v_key not in cache.finish_times:
+            cache.low[src_key] = min(cache.low[src_key], cache.discover_times[v_key])
+    cache.finish_times[src_key] = time.next()
+
+    if cache.low[src_key] == cache.discover_times[src_key]:
+        scc = []
+        while True:
+            v_key = cache.stack.pop()
+            cache.in_stack.remove(v_key)
+            scc.append(v_key)
+            if v_key == src_key:
+                break
+        sccs.append(scc)
+
+
+def scc_tarjan(graph: Graph) -> List[List]:
+    sccs = []
+    cache = TarjanCache()
+    time = TimeCounter()
+    for v_key in graph.vertex_keys():
+        if v_key not in cache.discover_times:
+            _tarjan_internal(graph, v_key, sccs, cache, time)
+    return sccs
+
+
 class TestScc(TestCase):
-    def test_scc_dfs(self):
+    def test_scc(self):
         graph = self._graph_from_figure_22_9()
-        result = scc_dfs(graph)
-        expected_result = self._expected_sccs_from_figure_22_9()
-        self._check_scc_result(expected_result, result)
+        methods = (scc_dfs, scc_tarjan)
+        for method in methods:
+            result = method(graph)
+            expected_result = self._expected_sccs_from_figure_22_9()
+            self._check_scc_result(expected_result, result)
 
-
-    def _expected_sccs_from_figure_22_9(self) -> List[List]:
+    @staticmethod
+    def _expected_sccs_from_figure_22_9() -> List[List]:
         return [
             ['a', 'b', 'e'],
             ['c', 'd'],
@@ -64,7 +108,8 @@ class TestScc(TestCase):
             ['h'],
         ]
 
-    def _graph_from_figure_22_9(self) -> Graph:
+    @staticmethod
+    def _graph_from_figure_22_9() -> Graph:
         graph = Graph()
         graph.add_vertex(Vertex('a'))
         graph.add_vertex(Vertex('b'))
@@ -94,5 +139,5 @@ class TestScc(TestCase):
         self.assertEqual(len(expected_result), len(result))
         for scc in result:
             scc.sort()
-        result.sort(key=lambda scc: scc[0])
+        result.sort(key=lambda _scc: _scc[0])
         self.assertListEqual(expected_result, result)
