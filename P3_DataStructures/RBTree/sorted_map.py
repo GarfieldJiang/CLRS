@@ -25,7 +25,7 @@ class SortedMap(Map):
         rb_pop(rbt, node)
         self._len -= 1
 
-    def __iter__(self):
+    def items(self):
         for kv in rb_iter(self._rbt):
             yield (kv.k, kv.v)
 
@@ -44,9 +44,8 @@ class SortedMap(Map):
     def __len__(self):
         return self._len
 
-    def keys(self):
-        for kv in rb_iter(self._rbt):
-            yield kv.k
+    def __iter__(self):
+        yield self.keys()
 
     def __getitem__(self, k):
         rbt = self._rbt
@@ -59,6 +58,9 @@ class SortedMap(Map):
         for kv in rb_iter(self._rbt):
             yield kv.v
 
+    def keys(self):
+        for kv in rb_iter(self._rbt):
+            yield kv.k
 
 class TestSortedMap(TestCase):
     def test_basic(self):

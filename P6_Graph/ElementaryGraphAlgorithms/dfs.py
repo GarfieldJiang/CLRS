@@ -8,6 +8,10 @@ class DFSResult:
         self.discover_times = {}
         self.finish_times = {}
 
+    def __repr__(self):
+        return 'came_from: %r, discover_times: %r, finish_times: %r' %\
+               (self.came_from, self.discover_times, self.finish_times)
+
     def __eq__(self, other):
         if not isinstance(other, DFSResult):
             return False
@@ -118,11 +122,11 @@ class TestDFS(TestCase):
         result = dfs(graph, pre_visit, post_visit)
 
         expected_result = DFSResult()
-        expected_result.discover_times = {'s': 1, 'z': 2, 'y': 3, 'x': 4, 'w': 7, 't': 11, 'v': 12, 'u': 14}
-        expected_result.finish_times = {'x': 5, 'y': 6, 'w': 8, 'z': 9, 's': 10, 'v': 13, 'u': 15, 't': 16}
-        expected_result.came_from = {'s': None, 'z': 's', 'y': 'z', 'x': 'y', 'w': 'z', 't': None, 'v': 't', 'u': 't'}
-        expected_pre_visit_array = ['s', 'z', 'y', 'x', 'w', 't', 'v', 'u']
-        expected_post_visit_array = ['x', 'y', 'w', 'z', 's', 'v', 'u', 't']
+        expected_result.discover_times = {'s': 1, 'w': 2, 'x': 3, 'z': 4, 'y': 5, 't': 11, 'u': 12, 'v': 13}
+        expected_result.finish_times = {'y': 6, 'z': 7, 'x': 8, 'w': 9, 's': 10, 'v': 14, 'u': 15, 't': 16}
+        expected_result.came_from = {'s': None, 'w': 's', 'x': 'w', 'z': 'x', 'y': 'z', 't': None, 'u': 't', 'v': 'u'}
+        expected_pre_visit_array = ['s', 'w', 'x', 'z', 'y', 't', 'u', 'v']
+        expected_post_visit_array = ['y', 'z', 'x', 'w', 's', 'v', 'u', 't']
         self.assertEqual(expected_result, result)
         self.assertSequenceEqual(expected_pre_visit_array, pre_visit_array)
         self.assertSequenceEqual(expected_post_visit_array, post_visit_array)

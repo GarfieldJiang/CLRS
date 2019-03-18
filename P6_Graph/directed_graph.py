@@ -1,11 +1,10 @@
-from collections import OrderedDict
-
+from P3_DataStructures.RBTree.sorted_map import SortedMap
 
 class Vertex(object):
     def __init__(self, key):
         assert key is not None
         self._key = key
-        self._successors = OrderedDict()
+        self._successors = SortedMap()
 
     def add_successor(self, successor_key, weight: float):
         assert successor_key not in self._successors
@@ -38,7 +37,7 @@ class Vertex(object):
 
 class Graph(object):
     def __init__(self):
-        self._vertices = OrderedDict()
+        self._vertices = SortedMap()
 
     def add_vertex(self, v: Vertex):
         assert v

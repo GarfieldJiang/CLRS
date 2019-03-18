@@ -40,7 +40,7 @@ def _euler(graph: Graph, path: list, src_index: int) -> Tuple[list, int]:
 class TestEuler(TestCase):
     def test_euler_undirected(self):
         graph = Graph()
-        for i in range(8):
+        for i in range(7, -1, -1):
             graph.add_vertex(Vertex(i))
         graph.add_2_edges(0, 1)
         graph.add_2_edges(1, 2)
