@@ -104,8 +104,18 @@ def heap_delete(array: List[T], i: int, key=None):
     """
     deleted = array[i]
     array[i] = array[-1]
+    if i == len(array) - 1:
+        del array[-1]
+        return deleted
+
     del array[-1]
-    max_heapify(array, 0, i, key=key)
+    key = key or default_key
+    if i == 0 or key(array[heap_parent(i)]) >= key(array[i]):
+        max_heapify(array, 0, i, key=key)
+    else:
+        while i > 0 and key(array[heap_parent(i)]) < key(array[i]):
+            array[heap_parent(i)], array[i] = array[i], array[heap_parent(i)]
+            i = heap_parent(i)
     return deleted
 
 
@@ -205,7 +215,8 @@ class TestHeap(unittest.TestCase):
             case_class(desc='Big sorted', array=[i for i in range(0, 100)], key=None),
             case_class(desc='Big inversely sorted', array=[99 - i for i in range(0, 100)], key=None),
             case_class(desc='Need another key',
-                       array=[need_key_item_class(key=99-i, value=i) for i in range(0, 100)], key=lambda x: x.key)
+                       array=[need_key_item_class(key=99-i, value=i) for i in range(0, 100)], key=lambda x: x.key),
+            case_class(desc='Unordered', array=[4, 8, 5, 7, 1, 2, 6, 3], key=None),
         )
         for case in cases:
             len_array = len(case.array)
@@ -218,3 +229,18 @@ class TestHeap(unittest.TestCase):
                                  msg='Wrong deletion: %s != %s' % (deleted, expected_deleted))
                 self.assertTrue(check_max_heap(array_copy, 0, 0, key=case.key),
                                 msg='Heap is not max: %s' % case.desc)
+
+    def test_heap_delete_rand(self):
+        from Common.common import rand_permutate
+        from random import randint
+        for i in range(100):
+            len = randint(10, 100)
+            array = list(range(1, len + 1))
+            rand_permutate(array)
+            build_max_heap(array, 0)
+            self.assertTrue(check_max_heap(array, 0, 0))
+            for j in range(len):
+                array_copy = list(array)
+                heap_delete(array_copy, j)
+                self.assertTrue(check_max_heap(array_copy, 0, 0),
+                                msg='Heap is not max %r. from %r deleting element at %d' % (array_copy, array, j))
