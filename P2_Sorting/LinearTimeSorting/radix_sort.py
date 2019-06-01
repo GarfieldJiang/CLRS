@@ -3,7 +3,7 @@ from typing import List, Callable, TypeVar
 from collections import namedtuple
 from Common.common import default_key
 from Common.sort_utilities import check_sorting_result
-from P2_Sorting.LinearTimeSorting.couting_sort import counting_sort
+from P2_Sorting.LinearTimeSorting.counting_sort import counting_sort
 
 
 T = TypeVar('T')

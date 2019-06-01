@@ -1,7 +1,7 @@
 from unittest import TestCase
 from typing import List, Callable
 from Common.sort_utilities import check_sorting_result
-from P2_Sorting.LinearTimeSorting.couting_sort import counting_sort
+from P2_Sorting.LinearTimeSorting.counting_sort import counting_sort
 
 
 def sort_strings(strs: List[str]):
