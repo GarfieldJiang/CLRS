@@ -30,7 +30,7 @@ def multiplicative_inverse(a: int, n: int):
     return x_prime % n
 
 
-class TestGCD(TestCase):
+class TestModularLinearEquations(TestCase):
     def test_solve_modular_linear_equations(self):
         cases = (
             (14, 30, 100, (95, 45)),
