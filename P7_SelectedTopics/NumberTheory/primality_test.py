@@ -37,7 +37,7 @@ def miller_rabin_is_prime(n: int, times: int):
     return True
 
 
-def __main():
+def _main():
     count = 0
     error_count = 0
     prime_count = 0
