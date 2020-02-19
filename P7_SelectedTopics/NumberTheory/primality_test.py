@@ -53,4 +53,4 @@ def _main():
 
 
 if __name__ == "__main__":
-    __main()
+    _main()
